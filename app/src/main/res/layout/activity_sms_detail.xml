@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.cetcme.xkclient.SmsDetailActivity"
+    android:orientation="vertical">
+
+    <com.qiuhong.qhlibrary.QHTitleView.QHTitleView
+        android:id="@+id/qhTitleView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+
+    <com.qmuiteam.qmui.widget.pullRefreshLayout.QMUIPullRefreshLayout
+        android:id="@+id/pull_to_refresh"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1">
+        <ListView
+            android:id="@+id/listview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:divider="@null"
+            android:stackFromBottom="true"
+            android:transcriptMode="alwaysScroll"
+            />
+
+        <!--android:stackFromBottom="true"-->
+        <!--android:transcriptMode="alwaysScroll"-->
+
+    </com.qmuiteam.qmui.widget.pullRefreshLayout.QMUIPullRefreshLayout>
+
+    <!--分割线-->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:background="@color/separateLineColor"/>
+
+    <!--底部发送栏-->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_margin="5dp"
+        >
+
+        <EditText
+            android:id="@+id/content_editText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="短信"
+            android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"
+            android:textSize="15sp" />
+        <com.qmuiteam.qmui.widget.roundwidget.QMUIRoundButton
+            android:id="@+id/send_button"
+            android:layout_width="80dp"
+            android:layout_height="36dp"
+            android:textSize="13sp"
+            android:text="发送"
+            app:qmui_borderColor="@color/QHTitleColor"/>
+
+    </LinearLayout>
+
+</LinearLayout>

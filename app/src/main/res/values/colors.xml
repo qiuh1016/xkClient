@@ -3,4 +3,15 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+    <color name="black">#000</color>
+
+
+    <color name="QHTitleColor">#47A2DC</color>
+    <color name="separateLineColor">#393939</color>
+    <color name="smsListContentColor">#646464</color>
+
+    <color name="smsDetailContentColor">#4b4b4b</color>
+    <color name="smsDetailTimeColor">#767676</color>
+
+
 </resources>

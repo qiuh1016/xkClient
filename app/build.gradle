@@ -27,4 +27,6 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
     compile 'com.github.qiuh1016:qhLibrary:1.2.0'
     compile 'com.kaopiz:kprogresshud:1.0.5'
+    // 腾讯ui
+    compile 'com.qmuiteam:qmui:1.0.6'
 }
