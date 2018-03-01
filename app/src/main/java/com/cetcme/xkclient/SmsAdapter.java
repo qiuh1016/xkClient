@@ -15,8 +15,8 @@ import java.util.List;
 
 public class SmsAdapter extends BaseAdapter {
 
-    public LayoutInflater mInflater;
-    public List<Message> dataList;
+    private LayoutInflater mInflater;
+    private List<Message> dataList;
 
     public SmsAdapter(Context context, List<Message> dataList) {
         this.dataList = dataList;

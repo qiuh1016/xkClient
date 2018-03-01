@@ -12,6 +12,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
+    <!--<com.qmuiteam.qmui.widget.QMUITopBar-->
+        <!--android:id="@+id/topbar"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="?attr/qmui_topbar_height" />-->
+
 
     <com.qmuiteam.qmui.widget.pullRefreshLayout.QMUIPullRefreshLayout
         android:id="@+id/pull_to_refresh"
@@ -19,7 +24,7 @@
         android:layout_height="match_parent"
         android:layout_weight="1">
         <ListView
-            android:id="@+id/listview"
+            android:id="@+id/listView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:divider="@null"
@@ -44,7 +49,8 @@
         android:layout_height="44dp"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:layout_margin="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginLeft="5dp"
         >
 
         <EditText

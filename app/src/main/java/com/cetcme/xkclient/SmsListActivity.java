@@ -64,6 +64,7 @@ public class SmsListActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Intent intent = new Intent(getApplication(), SmsDetailActivity.class);
+                intent.putExtra("userAddress", dataList.get(i).get("number").toString());
                 startActivity(intent);
             }
         });

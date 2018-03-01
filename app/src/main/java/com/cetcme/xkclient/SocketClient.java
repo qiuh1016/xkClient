@@ -27,8 +27,6 @@ public class SocketClient extends Service {
 
     private static Socket socket;
 
-    private static String testStr = "123";
-
     private static int BUFFER_SIZE = 1024 * 1024;
 
     @Override
@@ -47,7 +45,6 @@ public class SocketClient extends Service {
      */
     public void conn() {
         Log.e("JAVA", "to 建立连接：");
-        testStr = "hasChanged 123";
         new Thread() {
 
             @Override

@@ -33,7 +33,8 @@
         </activity>
         <activity android:name=".SmsListActivity" />
         <activity android:name=".SmsDetailActivity"
-            android:windowSoftInputMode="adjustPan|stateHidden"></activity>
+            android:windowSoftInputMode="adjustPan|stateHidden"/>
+        <activity android:name=".LoginActivity" />
     </application>
 
 </manifest>
