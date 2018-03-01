@@ -1,12 +1,16 @@
 package com.cetcme.xkclient;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.cetcme.xkclient.utils.PreferencesUtils;
 import com.qiuhong.qhlibrary.QHTitleView.QHTitleView;
@@ -21,6 +25,8 @@ public class LoginActivity extends AppCompatActivity {
     private EditText password_et;
     private QMUIRoundButton login_btn;
 
+    private MyApplication myApplication;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,6 +40,9 @@ public class LoginActivity extends AppCompatActivity {
         if (username != null && !username.isEmpty()) {
             username_et.setText(username);
         }
+
+        myApplication = (MyApplication) getApplication();
+        myApplication.loginActivity = this;
     }
 
     private void initView() {
@@ -98,28 +107,51 @@ public class LoginActivity extends AppCompatActivity {
                 .setTipWord("登录中")
                 .create();
         tipDialog.show();
-        
-        // 登录逻辑
+
+        myApplication.conn();
+
+//        // 登录逻辑
+//        new Handler().postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                tipDialog.dismiss();
+//                tipDialog = new QMUITipDialog.Builder(LoginActivity.this)
+//                        .setIconType(QMUITipDialog.Builder.ICON_TYPE_SUCCESS)
+//                        .setTipWord("登录成功")
+//                        .create();
+//                tipDialog.show();
+//                new Handler().postDelayed(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        tipDialog.dismiss();
+//                        Intent intent = new Intent();
+//                        intent.setClass(getApplication(), SmsListActivity.class);
+//                        startActivity(intent);
+//                    }
+//                }, 1000);
+//            }
+//        },1000);
+    }
+
+    public void loginResult(final boolean loginOK) {
+        tipDialog.dismiss();
+        tipDialog = new QMUITipDialog.Builder(LoginActivity.this)
+                .setIconType(loginOK ? QMUITipDialog.Builder.ICON_TYPE_SUCCESS : QMUITipDialog.Builder.ICON_TYPE_FAIL)
+                .setTipWord(loginOK ? "登录成功" : "登录失败")
+                .create();
+        tipDialog.show();
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
                 tipDialog.dismiss();
-                tipDialog = new QMUITipDialog.Builder(LoginActivity.this)
-                        .setIconType(QMUITipDialog.Builder.ICON_TYPE_SUCCESS)
-                        .setTipWord("登录成功")
-                        .create();
-                tipDialog.show();
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        tipDialog.dismiss();
-                        Intent intent = new Intent();
-                        intent.setClass(getApplication(), SmsListActivity.class);
-                        startActivity(intent);
-                    }
-                }, 1000);
+                if (loginOK) {
+                    Intent intent = new Intent();
+                    intent.setClass(getApplication(), SmsListActivity.class);
+                    startActivity(intent);
+                }
             }
-        },1000);
+        }, 1000);
+
     }
 
 
