@@ -10,6 +10,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
+import com.cetcme.xkclient.utils.DateUtil;
 import com.qiuhong.qhlibrary.QHTitleView.QHTitleView;
 
 import org.json.JSONArray;
@@ -95,7 +96,7 @@ public class SmsListActivity extends AppCompatActivity {
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
                 Map<String, Object> map = new HashMap<>();
                 map.put("userAddress", jsonObject.get("userAddress"));
-                map.put("lastSmsTime", modifyDate(jsonObject.get("lastSmsTime").toString()));
+                map.put("lastSmsTime", DateUtil.modifyDate(jsonObject.get("lastSmsTime").toString()));
                 map.put("lastSmsTimeOriginal", jsonObject.get("lastSmsTime").toString());
                 map.put("lastSmsContent", jsonObject.get("lastSmsContent"));
                 dataList.add(map);
@@ -105,19 +106,6 @@ public class SmsListActivity extends AppCompatActivity {
         }
 
         return dataList;
-    }
-
-    private String modifyDate(String dateStr) {
-        Date date = new Date(dateStr);
-        Date now = new Date();
-        SimpleDateFormat sdf = new SimpleDateFormat("MM-dd HH:mm");
-        if (now.getYear() != date.getYear()) {
-            sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-        } else if (now.getMonth() == date.getMonth() && now.getDate() == date.getDate()) {
-           sdf = new SimpleDateFormat("HH:mm");
-        }
-
-        return  sdf.format(date);
     }
 
     public static void sortIntMethod(List list) {
@@ -140,7 +128,7 @@ public class SmsListActivity extends AppCompatActivity {
     private void getNewSms(Message message) {
         Map<String, Object> map = new HashMap<>();
         map.put("userAddress", message.isSend() ? message.getReceiver() : message.getSender());
-        map.put("lastSmsTime", modifyDate(message.getSend_time().toString()));
+        map.put("lastSmsTime", DateUtil.modifyDate(message.getSend_time().toString()));
         map.put("lastSmsTimeOriginal", message.getSend_time().toString());
         map.put("lastSmsContent", message.getContent());
 

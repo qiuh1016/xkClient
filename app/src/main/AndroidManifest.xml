@@ -34,7 +34,7 @@
         </activity>
         <!--<activity android:name=".SmsListActivity" />-->
         <activity android:name=".SmsDetailActivity"
-            android:windowSoftInputMode="adjustPan|stateHidden"/>
+            android:windowSoftInputMode="adjustPan|stateAlwaysHidden"/>
         <activity android:name=".LoginActivity" />
 
     </application>

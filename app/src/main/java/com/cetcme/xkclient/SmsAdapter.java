@@ -7,6 +7,8 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+import com.cetcme.xkclient.utils.DateUtil;
+
 import java.util.List;
 
 /**
@@ -53,7 +55,7 @@ public class SmsAdapter extends BaseAdapter {
             TextView content_textView = view.findViewById(R.id.content_textView);
             TextView time_textView = view.findViewById(R.id.time_textView);
             content_textView.setText(message.getContent());
-            time_textView.setText(message.getSend_time().toLocaleString());
+            time_textView.setText(DateUtil.modifyDate(message.getSend_time().toString()));
 //        }
         return view;
     }

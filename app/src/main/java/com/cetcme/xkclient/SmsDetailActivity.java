@@ -1,34 +1,22 @@
 package com.cetcme.xkclient;
 
-import android.os.Handler;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.qiuhong.qhlibrary.QHTitleView.QHTitleView;
-import com.qmuiteam.qmui.widget.QMUIProgressBar;
-import com.qmuiteam.qmui.widget.QMUITopBar;
 import com.qmuiteam.qmui.widget.pullRefreshLayout.QMUIPullRefreshLayout;
 
-import org.json.JSONObject;
-
-import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+
+import static android.widget.AbsListView.TRANSCRIPT_MODE_NORMAL;
 
 public class SmsDetailActivity extends AppCompatActivity {
 
@@ -104,7 +92,7 @@ public class SmsDetailActivity extends AppCompatActivity {
                 mPullRefreshLayout.postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        mListView.setTranscriptMode(AbsListView.TRANSCRIPT_MODE_NORMAL);
+                        mListView.setTranscriptMode(TRANSCRIPT_MODE_NORMAL);
                         dataList.add(0, new Message().init("123456", "123456", new Date(), "刷新后加的短信刷新后加的短信刷新后加的短信刷新后加的短信刷新后加的短信刷新后加的短信刷新后加的短信刷新后加的短信刷新后加的短信刷新后加的短信", false, true, false));
                         mPullRefreshLayout.finishRefresh();
                         smsAdapter.notifyDataSetChanged();
@@ -131,21 +119,21 @@ public class SmsDetailActivity extends AppCompatActivity {
 //        dataList = gson.fromJson(arrayStr, type1);
 //
 
-        Message message = new Message().init("123456", "123456", new Date(), "111neirong1", true, true, false);
+        Message message = new Message().init("123456", "123456", new Date("2017/3/1 10:21"), "111neirong1", true, true, false);
         dataList.add(message);
 
         dataList.add(new Message().init("123456", "123456", new Date(), "222neirong2neirong2", false, true, false));
 
-//        dataList.add(new Message().init("123456", "123456", new Date(), "neirong3neirong3neirong3", true, true, false));
-//        dataList.add(new Message().init("123456", "123456", new Date(), "neirong4neirong4neirong4neirong4", false, true, false));
-//        dataList.add(new Message().init("123456", "123456", new Date(), "neirong5neirong5neirong5neirong5neirong5", true, true, false));
-//        dataList.add(new Message().init("123456", "123456", new Date(), "neirong6neirong6neirong6neirong6neirong6neirong6", false, true, false));
-//        dataList.add(new Message().init("123456", "123456", new Date(), "neirong7neirong7neirong7neirong7neirong7neirong7neirong7", false, true, false));
-//        dataList.add(new Message().init("123456", "123456", new Date(), "neirong2neirong2", true, true, false));
-//        dataList.add(new Message().init("123456", "123456", new Date(), "neirong3neirong3neirong3", false, true, false));
-//        dataList.add(new Message().init("123456", "123456", new Date(), "neirong4neirong4neirong4neirong4", true, true, false));
-//        dataList.add(new Message().init("123456", "123456", new Date(), "neirong5neirong5neirong5neirong5neirong5", false, true, false));
-//        dataList.add(new Message().init("123456", "123456", new Date(), "neirong6neirong6neirong6neirong6neirong6neirong6", true, true, false));
+        dataList.add(new Message().init("123456", "123456", new Date(), "neirong3neirong3neirong3", true, true, false));
+        dataList.add(new Message().init("123456", "123456", new Date(), "neirong4neirong4neirong4neirong4", false, true, false));
+        dataList.add(new Message().init("123456", "123456", new Date(), "neirong5neirong5neirong5neirong5neirong5", true, true, false));
+        dataList.add(new Message().init("123456", "123456", new Date(), "neirong6neirong6neirong6neirong6neirong6neirong6", false, true, false));
+        dataList.add(new Message().init("123456", "123456", new Date(), "neirong7neirong7neirong7neirong7neirong7neirong7neirong7", false, true, false));
+        dataList.add(new Message().init("123456", "123456", new Date(), "neirong2neirong2", true, true, false));
+        dataList.add(new Message().init("123456", "123456", new Date(), "neirong3neirong3neirong3", false, true, false));
+        dataList.add(new Message().init("123456", "123456", new Date(), "neirong4neirong4neirong4neirong4", true, true, false));
+        dataList.add(new Message().init("123456", "123456", new Date(), "neirong5neirong5neirong5neirong5neirong5", false, true, false));
+        dataList.add(new Message().init("123456", "123456", new Date(), "neirong6neirong6neirong6neirong6neirong6neirong6", true, true, false));
 
 //        if (dataList.size() < 6) {
 //            mListView.setStackFromBottom(false);
@@ -159,12 +147,16 @@ public class SmsDetailActivity extends AppCompatActivity {
         findViewById(R.id.send_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                dataList.add(new Message().init("123456", "123456", new Date(), content_editText.getText().toString(), true, true, false));
+
+                String content = content_editText.getText().toString();
+                if (content.isEmpty()) return;
+                dataList.add(new Message().init("123456", "123456", new Date(), content, true, true, false));
                 smsAdapter.notifyDataSetChanged();
                 mListView.smoothScrollToPosition(dataList.size() - 1);
 
                 content_editText.clearFocus();//取消焦点
                 content_editText.setText("");
+                ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(view.getWindowToken(), 0);
             }
         });
     }
