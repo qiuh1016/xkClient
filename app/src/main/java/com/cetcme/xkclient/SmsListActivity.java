@@ -208,6 +208,12 @@ public class SmsListActivity extends AppCompatActivity {
                     break;
                 case "sms_send":
                     Toast.makeText(this, receiveJson.get("msg").toString(), Toast.LENGTH_SHORT).show();
+                    break;
+                case "sms_push":
+                    Message message = new Message();
+                    message.fromJson(receiveJson.getJSONObject("data"));
+                    getNewSms(message);
+                    break;
             }
         } catch (JSONException e) {
             e.printStackTrace();

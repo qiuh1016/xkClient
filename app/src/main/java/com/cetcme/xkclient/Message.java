@@ -115,7 +115,6 @@ public class Message {
     }
 
     public void fromJson(JSONObject jsonObject) {
-        Message message = new Message();
         try {
             this.sender = jsonObject.getString("sender");
             this.receiver = jsonObject.getString("receiver");
