@@ -7,6 +7,10 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 
+import com.cetcme.xkclient.event.SmsEvent;
+
+import org.greenrobot.eventbus.EventBus;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -86,8 +90,15 @@ public class SocketClient extends Service {
                         int len = br.read(data);
                         if (len != -1) {
                             String rexml = String.valueOf(data, 0, len);
-                            System.out.println("获取到服务器的信息：" + address + " ");
+                            System.out.println("获取到客户端的信息：" + address + " ");
                             System.out.println(rexml);
+                            try {
+                                JSONObject receiveJson = new JSONObject(rexml);
+                                EventBus.getDefault().post(new SmsEvent(receiveJson));
+                                System.out.println("=========event bus");
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
                         } else {
                             socket.close();
                             return;

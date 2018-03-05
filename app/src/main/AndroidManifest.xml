@@ -25,21 +25,18 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/QMUI.Compat">
-        <activity android:name=".SmsListActivity">
+        <activity android:name=".LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <!--<activity android:name=".SmsListActivity" />-->
-        <activity android:name=".SmsDetailActivity"
-            android:windowSoftInputMode="adjustPan|stateAlwaysHidden"/>
-        <activity android:name=".LoginActivity" />
-
+        <!-- <activity android:name=".SmsListActivity" /> -->
+        <activity
+            android:name=".SmsDetailActivity"
+            android:windowSoftInputMode="adjustPan|stateAlwaysHidden" />
+        <activity android:name=".SmsListActivity" />
     </application>
-
-
-
 
 </manifest>

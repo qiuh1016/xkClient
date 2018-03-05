@@ -17,6 +17,46 @@
         <!--android:layout_width="match_parent"-->
         <!--android:layout_height="?attr/qmui_topbar_height" />-->
 
+    <!--收件人栏-->
+
+    <LinearLayout
+        android:id="@+id/receiver_layout"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginRight="5dp"
+        android:layout_marginLeft="5dp"
+        >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="10dp"
+            android:textSize="15sp"
+            android:text="收件人"
+            android:gravity="center"
+            android:textColor="@color/smsDetailTimeColor"
+            />
+
+        <EditText
+            android:id="@+id/receiver_editText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"
+            android:textSize="15sp"
+            android:textColor="@color/QHTitleColor"
+            android:lines="1"
+            />
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:background="@color/separateLineColor"/>
+
 
     <com.qmuiteam.qmui.widget.pullRefreshLayout.QMUIPullRefreshLayout
         android:id="@+id/pull_to_refresh"

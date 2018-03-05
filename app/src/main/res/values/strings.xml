@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">xkClient</string>
+    <string name="new_sms">新信息</string>
 </resources>

@@ -37,8 +37,10 @@ public class LoginActivity extends AppCompatActivity {
         initTitleView();
 
         String username = PreferencesUtils.getString(LoginActivity.this, "username");
+        String password = PreferencesUtils.getString(LoginActivity.this, "password");
         if (username != null && !username.isEmpty()) {
             username_et.setText(username);
+            password_et.setText(password);
         }
 
         myApplication = (MyApplication) getApplication();
@@ -65,6 +67,7 @@ public class LoginActivity extends AppCompatActivity {
 
                 if (alertText.isEmpty()) {
                     PreferencesUtils.putString(LoginActivity.this, "username", username);
+                    PreferencesUtils.putString(LoginActivity.this, "password", password);
                     login(username, password);
                 } else {
                     tipDialog = new QMUITipDialog.Builder(LoginActivity.this)
