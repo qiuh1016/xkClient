@@ -68,20 +68,12 @@ public class SmsListActivity extends AppCompatActivity {
                 .create();
 
         EventBus.getDefault().register(this);
-
-//        new Handler().postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//                Message message = new Message().init("333333", "654321", new Date(), "测试新加短信", false, true, false);
-//                getNewSms(message);
-//            }
-//        }, 1000);
     }
 
     private void initTitleView() {
         QHTitleView qhTitleView = findViewById(R.id.qhTitleView);
         qhTitleView.setTitle("短信列表");
-        qhTitleView.setBackView(0);
+        qhTitleView.setBackView(R.mipmap.icon_back_button);
         qhTitleView.setRightView(R.drawable.sms_add);
         qhTitleView.setClickCallback(new QHTitleView.ClickCallback() {
             @Override
@@ -102,8 +94,8 @@ public class SmsListActivity extends AppCompatActivity {
         //设置listView
         listView = findViewById(R.id.sms_list);
         simpleAdapter = new SimpleAdapter(this, getMessageData(), R.layout.cell_sms_list,
-                new String[]{"userAddress", "lastSmsTime", "lastSmsContent"},
-                new int[]{R.id.number_textView, R.id.time_textView, R.id.content_textView});
+                new String[]{"userAddress", "lastSmsTime", "lastSmsContent", "hasUnread"},
+                new int[]{R.id.number_textView, R.id.time_textView, R.id.content_textView, R.id.unread_tv});
         listView.setAdapter(simpleAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -111,6 +103,24 @@ public class SmsListActivity extends AppCompatActivity {
                 Intent intent = new Intent(getApplication(), SmsDetailActivity.class);
                 intent.putExtra("userAddress", dataList.get(i).get("userAddress").toString());
                 startActivity(intent);
+
+                if (!dataList.get(i).get("hasUnread").toString().equals("")) {
+                    dataList.get(i).put("hasUnread", "");
+                    simpleAdapter.notifyDataSetChanged();
+
+                    // 发送已读socket
+                    JSONObject sendJson = new JSONObject();
+                    try {
+                        sendJson.put("apiType", "sms_read");
+                        sendJson.put("userName", PreferencesUtils.getString(SmsListActivity.this, "username"));
+                        sendJson.put("password", PreferencesUtils.getString(SmsListActivity.this, "password"));
+                        sendJson.put("userAddress", dataList.get(i).get("userAddress"));
+                        MyApplication.send(sendJson);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+
             }
         });
 
@@ -198,6 +208,7 @@ public class SmsListActivity extends AppCompatActivity {
         map.put("lastSmsTime", DateUtil.modifyDate(message.getSend_time().toString()));
         map.put("lastSmsTimeOriginal", message.getSend_time().toString());
         map.put("lastSmsContent", message.getContent());
+        map.put("hasUnread", message.isRead() ? "" : "●");
 
         boolean hasThisAddress = false;
         for (Map<String, Object> hashMap : dataList) {
@@ -206,6 +217,7 @@ public class SmsListActivity extends AppCompatActivity {
                 hashMap.put("lastSmsTime", map.get("lastSmsTime"));
                 hashMap.put("lastSmsTimeOriginal", map.get("lastSmsTimeOriginal"));
                 hashMap.put("lastSmsContent", map.get("lastSmsContent"));
+                hashMap.put("hasUnread", map.get("hasUnread"));
                 break;
             }
         }
@@ -241,6 +253,7 @@ public class SmsListActivity extends AppCompatActivity {
                         map.put("lastSmsTime", DateUtil.modifyDate(smsCellJson.get("lastSmsTime").toString()));
                         map.put("lastSmsTimeOriginal", smsCellJson.get("lastSmsTime").toString());
                         map.put("lastSmsContent", smsCellJson.get("lastSmsContent"));
+                        map.put("hasUnread", smsCellJson.getBoolean("hasUnread") ? "●" : "");
                         dataList.add(map);
                     }
                     simpleAdapter.notifyDataSetChanged();
@@ -251,7 +264,6 @@ public class SmsListActivity extends AppCompatActivity {
                     getNewSms(message);
                     break;
                 case "socketDisconnect":
-                    Toast.makeText(getApplication(), "服务器断开连接，请重新登录", Toast.LENGTH_SHORT).show();
                     finish();
                     break;
             }
@@ -286,10 +298,8 @@ public class SmsListActivity extends AppCompatActivity {
                     @Override
                     public void onClick(QMUIDialog dialog, int index) {
                         dialog.dismiss();
-                        Intent intent = new Intent();
-                        intent.setClass(getApplication(), LoginActivity.class);
-                        startActivity(intent);
                         finish();
+                        MyApplication.socket = null;
                     }
                 })
                 .show();

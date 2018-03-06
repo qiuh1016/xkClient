@@ -12,10 +12,24 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.cetcme.xkclient.event.SmsEvent;
+import com.cetcme.xkclient.utils.DateUtil;
 import com.cetcme.xkclient.utils.PreferencesUtils;
 import com.qiuhong.qhlibrary.QHTitleView.QHTitleView;
+import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
+import com.qmuiteam.qmui.widget.dialog.QMUIDialogAction;
 import com.qmuiteam.qmui.widget.dialog.QMUITipDialog;
 import com.qmuiteam.qmui.widget.roundwidget.QMUIRoundButton;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -33,6 +47,8 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
         getSupportActionBar().hide();
 
+        EventBus.getDefault().register(this);
+
         initView();
         initTitleView();
 
@@ -44,7 +60,7 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         myApplication = (MyApplication) getApplication();
-        myApplication.loginActivity = this;
+        MyApplication.loginActivity = this;
     }
 
     private void initView() {
@@ -112,28 +128,6 @@ public class LoginActivity extends AppCompatActivity {
         tipDialog.show();
 
         myApplication.conn();
-
-//        // 登录逻辑
-//        new Handler().postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//                tipDialog.dismiss();
-//                tipDialog = new QMUITipDialog.Builder(LoginActivity.this)
-//                        .setIconType(QMUITipDialog.Builder.ICON_TYPE_SUCCESS)
-//                        .setTipWord("登录成功")
-//                        .create();
-//                tipDialog.show();
-//                new Handler().postDelayed(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        tipDialog.dismiss();
-//                        Intent intent = new Intent();
-//                        intent.setClass(getApplication(), SmsListActivity.class);
-//                        startActivity(intent);
-//                    }
-//                }, 1000);
-//            }
-//        },1000);
     }
 
     public void loginResult(final boolean loginOK) {
@@ -155,6 +149,38 @@ public class LoginActivity extends AppCompatActivity {
             }
         }, 1000);
 
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void Event(SmsEvent smsEvent) {
+        JSONObject receiveJson = smsEvent.getReceiveJson();
+        try {
+            String apiType = receiveJson.getString("apiType");
+            switch (apiType) {
+                case "socketDisconnect":
+                    new QMUIDialog.MessageDialogBuilder(LoginActivity.this)
+                            .setTitle("提示")
+                            .setMessage("与服务器断开连接")
+                            .addAction("确定", new QMUIDialogAction.ActionListener() {
+                                @Override
+                                public void onClick(QMUIDialog dialog, int index) {
+                                    dialog.dismiss();
+                                }
+                            })
+                            .show();
+                    break;
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().unregister(this);
+        }
     }
 
 

@@ -11,6 +11,13 @@
         android:id="@+id/qhTitleView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
+
+    <!--分割线-->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:background="@color/separateLineColor"/>
+
     <android.support.v4.widget.Space
         android:layout_width="match_parent"
         android:layout_height="50dp"

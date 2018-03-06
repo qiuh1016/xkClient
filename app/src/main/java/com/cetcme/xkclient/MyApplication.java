@@ -53,8 +53,8 @@ public class MyApplication extends Application {
 
     public static LoginActivity loginActivity;
 
-    private static Socket socket;
-    private static int BUFFER_SIZE = 1024 * 1024;
+    public static Socket socket;
+    private static int BUFFER_SIZE = 10 * 1024 * 1024;
 
     @SuppressLint("HandlerLeak")
     private static Handler mHandler = new Handler(){
@@ -111,7 +111,7 @@ public class MyApplication extends Application {
         }
     }
 
-    private static void disconnectSocket() {
+    private void disconnectSocket() {
         System.out.println("=======服务器断开连接");
         new QMUIDialog.MessageDialogBuilder(context)
             .setTitle("提示")
@@ -135,7 +135,7 @@ public class MyApplication extends Application {
     /**
      * 建立服务端连接
      */
-    public static void conn() {
+    public void conn() {
         Log.e("JAVA", "to 建立连接：");
         new Thread() {
 
@@ -152,6 +152,7 @@ public class MyApplication extends Application {
                     mHandler.sendMessage(msg);
 //                    setKeepaliveSocketOptions(socket, TCP_KEEPIDLE, TCP_KEEPINTVL, TCP_KEEPCNT);
                     startReader();
+                    checkConnect();
                 } catch (UnknownHostException e) {
                     android.os.Message msg = new Message();
                     msg.what = MESSAG_LOGIN_FAIL;
@@ -167,10 +168,12 @@ public class MyApplication extends Application {
         }.start();
     }
 
+    private String lastReceive = "";
+
     /**
      * 从参数的Socket里获取最新的消息
      */
-    private static void startReader() {
+    private void startReader() {
 
         new Thread() {
             @Override
@@ -180,7 +183,7 @@ public class MyApplication extends Application {
                     BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
                     while (true) {
 
-                        System.out.println("*等待服务器数据*" + socket.isConnected());
+                        System.out.println("*等待服务器数据*");
 
                         // 读取数据
                         char[] data = new char[BUFFER_SIZE];
@@ -190,10 +193,26 @@ public class MyApplication extends Application {
                             System.out.println("获取到服务器的信息：" + address + " ");
                             System.out.println(rexml);
                             try {
-                                JSONObject receiveJson = new JSONObject(rexml);
+                                JSONObject receiveJson;
+                                if (lastReceive.isEmpty()) {
+                                    receiveJson = new JSONObject(rexml);
+                                } else {
+                                    receiveJson = new JSONObject(lastReceive + rexml);
+                                }
+
                                 EventBus.getDefault().post(new SmsEvent(receiveJson));
+                                lastReceive = "";
                             } catch (JSONException e) {
                                 e.printStackTrace();
+                                lastReceive = lastReceive + rexml;
+//                                Looper.prepare();
+//                                new Handler().postDelayed(new Runnable() {
+//                                    @Override
+//                                    public void run() {
+//                                        lastReceive = "";
+//                                    }
+//                                }, 1000);
+//                                Looper.loop();
                             }
                         } else {
                             socket.close();
@@ -208,6 +227,38 @@ public class MyApplication extends Application {
         }.start();
 
     }
+
+    /**
+     * 从参数的Socket里获取最新的消息
+     */
+    private void checkConnect() {
+
+        new Thread() {
+            @Override
+            public void run() {
+
+                while (socket != null && !socket.isClosed()) {
+
+                    try {
+                        sleep(2000);
+
+                        JSONObject jsonObject = new JSONObject();
+                        jsonObject.put("apiType", "checkConnect");
+                        send(jsonObject);
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+
+            }
+        }.start();
+
+    }
+
 
     /**
      * 发送消息
@@ -231,6 +282,7 @@ public class MyApplication extends Application {
                     System.out.println("****send: " + json.toString());
                 } catch (IOException e) {
                     try {
+                        socket = null;
                         JSONObject jsonObject = new JSONObject();
                         jsonObject.put("apiType", "socketDisconnect");
                         EventBus.getDefault().post(new SmsEvent(jsonObject));
