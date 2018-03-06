@@ -1,4 +1,4 @@
-package com.cetcme.xkclient;
+package com.cetcme.xkclient.View;
 
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -17,12 +17,14 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.cetcme.xkclient.event.NewMessageEvent;
-import com.cetcme.xkclient.event.SmsEvent;
-import com.cetcme.xkclient.utils.DateUtil;
-import com.cetcme.xkclient.utils.PreferencesUtils;
+import com.cetcme.xkclient.MyApplication;
+import com.cetcme.xkclient.MyClass.SmsAdapter;
+import com.cetcme.xkclient.R;
+import com.cetcme.xkclient.RealmModels.Message;
+import com.cetcme.xkclient.Event.NewMessageEvent;
+import com.cetcme.xkclient.Event.SmsEvent;
+import com.cetcme.xkclient.Utils.PreferencesUtils;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.qiuhong.qhlibrary.QHTitleView.QHTitleView;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
 import com.qmuiteam.qmui.widget.pullRefreshLayout.QMUIPullRefreshLayout;
@@ -34,12 +36,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static android.widget.AbsListView.TRANSCRIPT_MODE_NORMAL;
 
@@ -258,7 +257,14 @@ public class SmsDetailActivity extends AppCompatActivity {
 
                 }
 
-                newMessage = new Message().init(PreferencesUtils.getString(SmsDetailActivity.this, "myAddress"), userAddress, new Date(), content, true, true, false);
+                newMessage = new Message();
+                newMessage.setReceiver(userAddress);
+                newMessage.setSender(PreferencesUtils.getString(SmsDetailActivity.this, "myAddress"));
+                newMessage.setContent(content);
+                newMessage.setSend_time(new Date());
+                newMessage.setDeleted(false);
+                newMessage.setRead(true);
+                newMessage.setSend(true);
 
                 JSONObject sendJson = new JSONObject();
                 try {

@@ -1,4 +1,4 @@
-package com.cetcme.xkclient;
+package com.cetcme.xkclient.RealmModels;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,19 +26,6 @@ public class Message {
     private boolean read;
     private boolean deleted;
     private boolean isSend;
-
-    Message init(String sender, String receiver, Date send_time, String content, boolean isSend, boolean read, boolean deleted) {
-        this.sender = sender;
-        this.receiver = receiver;
-        this.send_time = send_time;
-        this.content = content;
-        this.setSend(isSend);
-        this.read = read;
-        this.deleted = deleted;
-        return this;
-    }
-
-
 
     public String getSender() {
         return sender;

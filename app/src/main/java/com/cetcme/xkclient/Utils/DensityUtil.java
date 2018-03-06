@@ -1,4 +1,4 @@
-package com.cetcme.xkclient.utils;
+package com.cetcme.xkclient.Utils;
 
 /**
  * Created by qiuhong on 9/1/16.

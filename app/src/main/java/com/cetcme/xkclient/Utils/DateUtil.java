@@ -1,4 +1,4 @@
-package com.cetcme.xkclient.utils;
+package com.cetcme.xkclient.Utils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

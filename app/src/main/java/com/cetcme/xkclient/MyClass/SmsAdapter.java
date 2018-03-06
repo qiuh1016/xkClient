@@ -1,4 +1,4 @@
-package com.cetcme.xkclient;
+package com.cetcme.xkclient.MyClass;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -7,7 +7,9 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-import com.cetcme.xkclient.utils.DateUtil;
+import com.cetcme.xkclient.R;
+import com.cetcme.xkclient.RealmModels.Message;
+import com.cetcme.xkclient.Utils.DateUtil;
 
 import java.util.List;
 

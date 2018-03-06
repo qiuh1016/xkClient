@@ -1,20 +1,16 @@
-package com.cetcme.xkclient;
+package com.cetcme.xkclient.View;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.Toast;
 
-import com.cetcme.xkclient.event.SmsEvent;
-import com.cetcme.xkclient.utils.DateUtil;
-import com.cetcme.xkclient.utils.PreferencesUtils;
+import com.cetcme.xkclient.Event.SmsEvent;
+import com.cetcme.xkclient.MyApplication;
+import com.cetcme.xkclient.R;
+import com.cetcme.xkclient.Utils.PreferencesUtils;
 import com.qiuhong.qhlibrary.QHTitleView.QHTitleView;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialogAction;
@@ -24,12 +20,8 @@ import com.qmuiteam.qmui.widget.roundwidget.QMUIRoundButton;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -49,6 +41,8 @@ public class LoginActivity extends AppCompatActivity {
 
         EventBus.getDefault().register(this);
 
+        myApplication = (MyApplication) getApplication();
+
         initView();
         initTitleView();
 
@@ -59,8 +53,7 @@ public class LoginActivity extends AppCompatActivity {
             password_et.setText(password);
         }
 
-        myApplication = (MyApplication) getApplication();
-        MyApplication.loginActivity = this;
+        myApplication.loginActivity = this;
     }
 
     private void initView() {

@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.cetcme.xkclient.SmsListActivity"
+    tools:context="com.cetcme.xkclient.View.SmsListActivity"
     android:orientation="vertical">
 
     <com.qiuhong.qhlibrary.QHTitleView.QHTitleView

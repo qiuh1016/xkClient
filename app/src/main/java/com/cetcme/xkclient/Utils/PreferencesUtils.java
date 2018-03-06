@@ -1,4 +1,4 @@
-package com.cetcme.xkclient.utils;
+package com.cetcme.xkclient.Utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;

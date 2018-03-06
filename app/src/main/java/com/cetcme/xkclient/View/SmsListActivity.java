@@ -1,26 +1,24 @@
-package com.cetcme.xkclient;
+package com.cetcme.xkclient.View;
 
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
-import android.widget.Toast;
 
-import com.cetcme.xkclient.event.NewMessageEvent;
-import com.cetcme.xkclient.event.SmsEvent;
-import com.cetcme.xkclient.utils.DateUtil;
-import com.cetcme.xkclient.utils.PreferencesUtils;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import com.cetcme.xkclient.MyApplication;
+import com.cetcme.xkclient.R;
+import com.cetcme.xkclient.RealmModels.Message;
+import com.cetcme.xkclient.Event.NewMessageEvent;
+import com.cetcme.xkclient.Event.SmsEvent;
+import com.cetcme.xkclient.Utils.DateUtil;
+import com.cetcme.xkclient.Utils.PreferencesUtils;
 import com.qiuhong.qhlibrary.QHTitleView.QHTitleView;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialogAction;
-import com.qmuiteam.qmui.widget.dialog.QMUITipDialog;
 import com.qmuiteam.qmui.widget.pullRefreshLayout.QMUIPullRefreshLayout;
 
 import org.greenrobot.eventbus.EventBus;
@@ -30,8 +28,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.lang.reflect.Type;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -39,8 +35,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static android.widget.AbsListView.TRANSCRIPT_MODE_NORMAL;
 
 
 public class SmsListActivity extends AppCompatActivity {
@@ -50,10 +44,6 @@ public class SmsListActivity extends AppCompatActivity {
     private SimpleAdapter simpleAdapter;
     private List<Map<String, Object>> dataList = new ArrayList<>();
 
-    private QMUITipDialog tipDialog;
-
-    private Gson gson = new Gson();
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,10 +52,6 @@ public class SmsListActivity extends AppCompatActivity {
 
         initTitleView();
         initListView();
-
-        tipDialog = new QMUITipDialog.Builder(SmsListActivity.this)
-                .setTipWord("列表刷新中")
-                .create();
 
         EventBus.getDefault().register(this);
     }
@@ -202,7 +188,7 @@ public class SmsListActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
-    
+
     public static void sortIntMethod(List list) {
         Collections.sort(list, new Comparator() {
             @Override

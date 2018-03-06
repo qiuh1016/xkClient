@@ -1,4 +1,4 @@
-package com.cetcme.xkclient.event;
+package com.cetcme.xkclient.Event;
 
 import org.json.JSONObject;
 

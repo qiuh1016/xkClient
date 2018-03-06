@@ -3,31 +3,25 @@ package com.cetcme.xkclient;
 import android.annotation.SuppressLint;
 import android.app.Application;
 import android.content.Context;
-import android.content.Intent;
 import android.os.*;
 import android.os.Message;
 import android.util.Log;
-import android.widget.Toast;
 
-import com.cetcme.xkclient.event.SmsEvent;
-import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
-import com.qmuiteam.qmui.widget.dialog.QMUIDialogAction;
+import com.cetcme.xkclient.Event.SmsEvent;
+import com.cetcme.xkclient.MyClass.Constant;
+import com.cetcme.xkclient.View.LoginActivity;
 
 import org.greenrobot.eventbus.EventBus;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.FileDescriptor;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.SocketException;
 import java.net.UnknownHostException;
 
 /**
@@ -43,25 +37,19 @@ public class MyApplication extends Application {
         context = this;
     }
 
-    private static int MESSAG_LOGIN_OK = 0x01;
-    private static  int MESSAG_LOGIN_FAIL = 0x02;
-    private static  int SOCKET_DISCONNECT = 0x00;
+    private static int MESSAGE_LOGIN_OK = 0x01;
+    private static int MESSAGE_LOGIN_FAIL = 0x02;
 
-
-    private static String serverIP = "192.168.43.1";
-    private static int serverPort = 9999;
-
-    public static LoginActivity loginActivity;
+    public LoginActivity loginActivity;
 
     public static Socket socket;
     private static int BUFFER_SIZE = 10 * 1024 * 1024;
 
     @SuppressLint("HandlerLeak")
-    private static Handler mHandler = new Handler(){
+    private Handler mHandler = new Handler(){
         @Override
         public void handleMessage(android.os.Message msg) {
             super.handleMessage(msg);
-            //获得刚才发送的Message对象，然后在这里进行UI操作
             switch (msg.what) {
                 case 0x01:
                     loginActivity.loginResult(true);
@@ -72,65 +60,6 @@ public class MyApplication extends Application {
             }
         }
     };
-
-    private final static int SOL_TCP = 6;
-    private final static int TCP_KEEPIDLE = 4;
-    private final static int TCP_KEEPINTVL = 5;
-    private final static int TCP_KEEPCNT = 6;
-
-    protected void setKeepaliveSocketOptions(Socket socket, int idleTimeout, int interval, int count) {
-        try {
-            socket.setKeepAlive(true);
-            try {
-                Field socketImplField = Class.forName("java.net.Socket").getDeclaredField("impl");
-                socketImplField.setAccessible(true);
-                if (socketImplField != null) {
-                    Object plainSocketImpl = socketImplField.get(socket);
-                    Field fileDescriptorField = Class.forName("java.net.SocketImpl").getDeclaredField("fd");
-                    if (fileDescriptorField != null) {
-                        fileDescriptorField.setAccessible(true);
-                        FileDescriptor fileDescriptor = (FileDescriptor) fileDescriptorField.get(plainSocketImpl);
-                        Class libCoreClass = Class.forName("libcore.io.Libcore");
-                        Field osField = libCoreClass.getDeclaredField("os");
-                        osField.setAccessible(true);
-                        Object libcoreOs = osField.get(libCoreClass);
-                        Method setSocketOptsMethod = Class.forName("libcore.io.ForwardingOs").getDeclaredMethod("setsockoptInt", FileDescriptor.class, int.class, int.class, int.class);
-                        if (setSocketOptsMethod != null) {
-                            setSocketOptsMethod.invoke(libcoreOs, fileDescriptor, SOL_TCP, TCP_KEEPIDLE, idleTimeout);
-                            setSocketOptsMethod.invoke(libcoreOs, fileDescriptor, SOL_TCP, TCP_KEEPINTVL, interval);
-                            setSocketOptsMethod.invoke(libcoreOs, fileDescriptor, SOL_TCP, TCP_KEEPCNT, count);
-                        }
-                    }
-                }
-            }
-            catch (Exception reflectionException) {
-                disconnectSocket();
-            }
-        } catch (SocketException e) {
-            disconnectSocket();
-        }
-    }
-
-    private void disconnectSocket() {
-        System.out.println("=======服务器断开连接");
-        new QMUIDialog.MessageDialogBuilder(context)
-            .setTitle("提示")
-            .setMessage("与服务器断开连接，是否重连？")
-            .addAction("取消", new QMUIDialogAction.ActionListener() {
-                @Override
-                public void onClick(QMUIDialog dialog, int index) {
-                    dialog.dismiss();
-                }
-            })
-            .addAction(0, "重连", QMUIDialogAction.ACTION_PROP_NEGATIVE, new QMUIDialogAction.ActionListener() {
-                @Override
-                public void onClick(QMUIDialog dialog, int index) {
-                    conn();
-                    dialog.dismiss();
-                }
-            })
-            .show();
-    }
 
     /**
      * 建立服务端连接
@@ -144,23 +73,22 @@ public class MyApplication extends Application {
 
                 try {
                     socket = new Socket();
-                    socket.connect(new InetSocketAddress(serverIP, serverPort), 2000);
+                    socket.connect(new InetSocketAddress(Constant.SOCKET_SERVER_IP, Constant.SOCKET_SERVER_PORT), Constant.SOCKET_CONNECT_TIME_OUT_TIME);
                     Log.e("JAVA", "建立连接：" + socket);
 
                     android.os.Message msg = new Message();
-                    msg.what = MESSAG_LOGIN_OK;
+                    msg.what = MESSAGE_LOGIN_OK;
                     mHandler.sendMessage(msg);
-//                    setKeepaliveSocketOptions(socket, TCP_KEEPIDLE, TCP_KEEPINTVL, TCP_KEEPCNT);
                     startReader();
                     checkConnect();
                 } catch (UnknownHostException e) {
                     android.os.Message msg = new Message();
-                    msg.what = MESSAG_LOGIN_FAIL;
+                    msg.what = MESSAGE_LOGIN_FAIL;
                     mHandler.sendMessage(msg);
                     e.printStackTrace();
                 } catch (IOException e) {
                     android.os.Message msg = new Message();
-                    msg.what = MESSAG_LOGIN_FAIL;
+                    msg.what = MESSAGE_LOGIN_FAIL;
                     mHandler.sendMessage(msg);
                     e.printStackTrace();
                 }
@@ -240,7 +168,7 @@ public class MyApplication extends Application {
                 while (socket != null && !socket.isClosed()) {
 
                     try {
-                        sleep(2000);
+                        sleep(Constant.SOCKET_HEART_BEAT_TIME);
 
                         JSONObject jsonObject = new JSONObject();
                         jsonObject.put("apiType", "checkConnect");

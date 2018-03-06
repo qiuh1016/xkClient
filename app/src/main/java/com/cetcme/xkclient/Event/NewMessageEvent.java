@@ -1,6 +1,6 @@
-package com.cetcme.xkclient.event;
+package com.cetcme.xkclient.Event;
 
-import com.cetcme.xkclient.Message;
+import com.cetcme.xkclient.RealmModels.Message;
 
 /**
  * Created by qiuhong on 05/03/2018.
