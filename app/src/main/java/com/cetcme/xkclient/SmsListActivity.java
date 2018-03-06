@@ -124,6 +124,42 @@ public class SmsListActivity extends AppCompatActivity {
             }
         });
 
+        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, final int i, long l) {
+                final String[] items = new String[]{"删除"};
+                new QMUIDialog
+                        .MenuDialogBuilder(SmsListActivity.this)
+                        .addItems(items, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                switch (which) {
+                                    case 0:
+
+                                        // 发送删除socket
+                                        JSONObject sendJson = new JSONObject();
+                                        try {
+                                            sendJson.put("apiType", "sms_delete");
+                                            sendJson.put("userName", PreferencesUtils.getString(SmsListActivity.this, "username"));
+                                            sendJson.put("password", PreferencesUtils.getString(SmsListActivity.this, "password"));
+                                            sendJson.put("userAddress", dataList.get(i).get("userAddress"));
+                                            MyApplication.send(sendJson);
+                                        } catch (JSONException e) {
+                                            e.printStackTrace();
+                                        }
+
+                                        dataList.remove(i);
+                                        simpleAdapter.notifyDataSetChanged();
+                                        break;
+                                }
+                                dialog.dismiss();
+                            }
+                        })
+                        .show();
+                return false;
+            }
+        });
+
         mPullRefreshLayout = findViewById(R.id.pull_to_refresh);
         mPullRefreshLayout.setOnPullListener(new QMUIPullRefreshLayout.OnPullListener() {
             @Override
@@ -151,22 +187,6 @@ public class SmsListActivity extends AppCompatActivity {
     }
 
     private List<Map<String, Object>> getMessageData() {
-//        // TODO: 获取短信列表
-//        String str = "[{\"userAddress\":\"123456\",\"lastSmsTime\":\"Thu Mar 01 16:56:25 GMT+08:00 2018\",\"lastSmsContent\":\"xz\\n fasong\"},{\"userAddress\":\"67876\",\"lastSmsTime\":\"Fri Jan 02 08:21:39 GMT+08:00 2018\",\"lastSmsContent\":\"123556\"},{\"userAddress\":\"654321\",\"lastSmsTime\":\"Fri Jan 02 08:11:48 GMT+08:00 1970\",\"lastSmsContent\":\"Fuchs I\"},{\"userAddress\":\"12451245\",\"lastSmsTime\":\"Fri Jan 02 08:11:19 GMT+08:00 1970\",\"lastSmsContent\":\"such cm\"}]";
-//        try {
-//            JSONArray jsonArray = new JSONArray(str);
-//            for (int i = 0; i < jsonArray.length(); i++) {
-//                JSONObject jsonObject = jsonArray.getJSONObject(i);
-//                Map<String, Object> map = new HashMap<>();
-//                map.put("userAddress", jsonObject.get("userAddress"));
-//                map.put("lastSmsTime", DateUtil.modifyDate(jsonObject.get("lastSmsTime").toString()));
-//                map.put("lastSmsTimeOriginal", jsonObject.get("lastSmsTime").toString());
-//                map.put("lastSmsContent", jsonObject.get("lastSmsContent"));
-//                dataList.add(map);
-//            }
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
         toGetSmsList();
         return dataList;
     }
@@ -182,9 +202,7 @@ public class SmsListActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
-
-
-
+    
     public static void sortIntMethod(List list) {
         Collections.sort(list, new Comparator() {
             @Override
