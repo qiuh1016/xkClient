@@ -2,10 +2,12 @@ package com.cetcme.xkclient;
 
 import android.annotation.SuppressLint;
 import android.app.Application;
+import android.content.Context;
 import android.content.Intent;
 import android.os.*;
 import android.os.Message;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.cetcme.xkclient.event.SmsEvent;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
@@ -34,27 +36,28 @@ import java.net.UnknownHostException;
 
 public class MyApplication extends Application {
 
+    static Context context;
     @Override
     public void onCreate() {
         super.onCreate();
-
+        context = this;
     }
 
-    private int MESSAG_LOGIN_OK = 0x01;
-    private int MESSAG_LOGIN_FAIL = 0x02;
-    private int SOCKET_DISCONNECT = 0x00;
+    private static int MESSAG_LOGIN_OK = 0x01;
+    private static  int MESSAG_LOGIN_FAIL = 0x02;
+    private static  int SOCKET_DISCONNECT = 0x00;
 
 
-    private String serverIP = "192.168.43.1";
-    private int serverPort = 9999;
+    private static String serverIP = "192.168.43.1";
+    private static int serverPort = 9999;
 
-    public LoginActivity loginActivity;
+    public static LoginActivity loginActivity;
 
     private static Socket socket;
     private static int BUFFER_SIZE = 1024 * 1024;
 
     @SuppressLint("HandlerLeak")
-    private Handler mHandler = new Handler(){
+    private static Handler mHandler = new Handler(){
         @Override
         public void handleMessage(android.os.Message msg) {
             super.handleMessage(msg);
@@ -64,7 +67,7 @@ public class MyApplication extends Application {
                     loginActivity.loginResult(true);
                     break;
                 case 0x02:
-                    loginActivity.loginResult(true);
+                    loginActivity.loginResult(false);
                     break;
             }
         }
@@ -108,9 +111,9 @@ public class MyApplication extends Application {
         }
     }
 
-    private void disconnectSocket() {
+    private static void disconnectSocket() {
         System.out.println("=======服务器断开连接");
-        new QMUIDialog.MessageDialogBuilder(this)
+        new QMUIDialog.MessageDialogBuilder(context)
             .setTitle("提示")
             .setMessage("与服务器断开连接，是否重连？")
             .addAction("取消", new QMUIDialogAction.ActionListener() {
@@ -132,7 +135,7 @@ public class MyApplication extends Application {
     /**
      * 建立服务端连接
      */
-    public void conn() {
+    public static void conn() {
         Log.e("JAVA", "to 建立连接：");
         new Thread() {
 
@@ -147,7 +150,7 @@ public class MyApplication extends Application {
                     android.os.Message msg = new Message();
                     msg.what = MESSAG_LOGIN_OK;
                     mHandler.sendMessage(msg);
-                    setKeepaliveSocketOptions(socket, TCP_KEEPIDLE, TCP_KEEPINTVL, TCP_KEEPCNT);
+//                    setKeepaliveSocketOptions(socket, TCP_KEEPIDLE, TCP_KEEPINTVL, TCP_KEEPCNT);
                     startReader();
                 } catch (UnknownHostException e) {
                     android.os.Message msg = new Message();
@@ -167,7 +170,7 @@ public class MyApplication extends Application {
     /**
      * 从参数的Socket里获取最新的消息
      */
-    private void startReader() {
+    private static void startReader() {
 
         new Thread() {
             @Override
@@ -177,7 +180,7 @@ public class MyApplication extends Application {
                     BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
                     while (true) {
 
-                        System.out.println("*等待服务器数据*");
+                        System.out.println("*等待服务器数据*" + socket.isConnected());
 
                         // 读取数据
                         char[] data = new char[BUFFER_SIZE];
@@ -189,7 +192,6 @@ public class MyApplication extends Application {
                             try {
                                 JSONObject receiveJson = new JSONObject(rexml);
                                 EventBus.getDefault().post(new SmsEvent(receiveJson));
-                                System.out.println("=========event bus");
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
@@ -228,9 +230,17 @@ public class MyApplication extends Application {
 
                     System.out.println("****send: " + json.toString());
                 } catch (IOException e) {
+                    try {
+                        JSONObject jsonObject = new JSONObject();
+                        jsonObject.put("apiType", "socketDisconnect");
+                        EventBus.getDefault().post(new SmsEvent(jsonObject));
+                    } catch (JSONException e1) {
+                        e1.printStackTrace();
+                    }
                     e.printStackTrace();
                 }
             }
         }.start();
     }
+
 }

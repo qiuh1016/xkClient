@@ -18,6 +18,10 @@ import com.cetcme.xkclient.utils.PreferencesUtils;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.qiuhong.qhlibrary.QHTitleView.QHTitleView;
+import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
+import com.qmuiteam.qmui.widget.dialog.QMUIDialogAction;
+import com.qmuiteam.qmui.widget.dialog.QMUITipDialog;
+import com.qmuiteam.qmui.widget.pullRefreshLayout.QMUIPullRefreshLayout;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -36,12 +40,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static android.widget.AbsListView.TRANSCRIPT_MODE_NORMAL;
+
 
 public class SmsListActivity extends AppCompatActivity {
 
     private ListView listView;
+    private QMUIPullRefreshLayout mPullRefreshLayout;
     private SimpleAdapter simpleAdapter;
     private List<Map<String, Object>> dataList = new ArrayList<>();
+
+    private QMUITipDialog tipDialog;
 
     private Gson gson = new Gson();
 
@@ -53,6 +62,10 @@ public class SmsListActivity extends AppCompatActivity {
 
         initTitleView();
         initListView();
+
+        tipDialog = new QMUITipDialog.Builder(SmsListActivity.this)
+                .setTipWord("列表刷新中")
+                .create();
 
         EventBus.getDefault().register(this);
 
@@ -73,8 +86,7 @@ public class SmsListActivity extends AppCompatActivity {
         qhTitleView.setClickCallback(new QHTitleView.ClickCallback() {
             @Override
             public void onBackClick() {
-                //
-                toGetSmsList();
+                showLogoutDialog();
             }
 
             @Override
@@ -82,7 +94,6 @@ public class SmsListActivity extends AppCompatActivity {
                 Intent intent = new Intent(getApplication(), SmsDetailActivity.class);
                 intent.putExtra("userAddress", getString(R.string.new_sms));
                 startActivity(intent);
-
             }
         });
     }
@@ -100,6 +111,31 @@ public class SmsListActivity extends AppCompatActivity {
                 Intent intent = new Intent(getApplication(), SmsDetailActivity.class);
                 intent.putExtra("userAddress", dataList.get(i).get("userAddress").toString());
                 startActivity(intent);
+            }
+        });
+
+        mPullRefreshLayout = findViewById(R.id.pull_to_refresh);
+        mPullRefreshLayout.setOnPullListener(new QMUIPullRefreshLayout.OnPullListener() {
+            @Override
+            public void onMoveTarget(int offset) {
+
+            }
+
+            @Override
+            public void onMoveRefreshView(int offset) {
+
+            }
+
+            @Override
+            public void onRefresh() {
+                toGetSmsList();
+
+                mPullRefreshLayout.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        mPullRefreshLayout.finishRefresh();
+                    }
+                }, 10000);
             }
         });
     }
@@ -179,17 +215,20 @@ public class SmsListActivity extends AppCompatActivity {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void Event(NewMessageEvent messageEvent) {
+    public void NewMessageEvent(NewMessageEvent messageEvent) {
         getNewSms(messageEvent.getMessage());
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void Event(SmsEvent smsEvent) {
+    public void SocketEvent(SmsEvent smsEvent) {
         JSONObject receiveJson = smsEvent.getReceiveJson();
         try {
             String apiType = receiveJson.getString("apiType");
             switch (apiType) {
                 case "sms_list":
+
+                    mPullRefreshLayout.finishRefresh();
+
                     dataList.clear();
                     JSONArray smsList = receiveJson.getJSONArray("data");
                     String myAddress = receiveJson.getString("userAddress");
@@ -206,13 +245,14 @@ public class SmsListActivity extends AppCompatActivity {
                     }
                     simpleAdapter.notifyDataSetChanged();
                     break;
-                case "sms_send":
-                    Toast.makeText(this, receiveJson.get("msg").toString(), Toast.LENGTH_SHORT).show();
-                    break;
                 case "sms_push":
                     Message message = new Message();
                     message.fromJson(receiveJson.getJSONObject("data"));
                     getNewSms(message);
+                    break;
+                case "socketDisconnect":
+                    Toast.makeText(getApplication(), "服务器断开连接，请重新登录", Toast.LENGTH_SHORT).show();
+                    finish();
                     break;
             }
         } catch (JSONException e) {
@@ -226,6 +266,33 @@ public class SmsListActivity extends AppCompatActivity {
         if(EventBus.getDefault().isRegistered(this)) {
             EventBus.getDefault().unregister(this);
         }
+    }
+
+    public void onBackPressed() {
+        showLogoutDialog();
+    }
+
+    private void showLogoutDialog() {
+        new QMUIDialog.MessageDialogBuilder(SmsListActivity.this)
+                .setTitle("提示")
+                .setMessage("是否退出登录")
+                .addAction("取消", new QMUIDialogAction.ActionListener() {
+                    @Override
+                    public void onClick(QMUIDialog dialog, int index) {
+                        dialog.dismiss();
+                    }
+                })
+                .addAction(0, "退出", QMUIDialogAction.ACTION_PROP_NEGATIVE, new QMUIDialogAction.ActionListener() {
+                    @Override
+                    public void onClick(QMUIDialog dialog, int index) {
+                        dialog.dismiss();
+                        Intent intent = new Intent();
+                        intent.setClass(getApplication(), LoginActivity.class);
+                        startActivity(intent);
+                        finish();
+                    }
+                })
+                .show();
     }
 
 }

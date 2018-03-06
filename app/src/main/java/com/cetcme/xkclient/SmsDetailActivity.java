@@ -8,6 +8,7 @@ import android.text.TextWatcher;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -47,6 +48,8 @@ public class SmsDetailActivity extends AppCompatActivity {
     private List<Message> dataList = new ArrayList<>();
     private QHTitleView qhTitleView;
 
+    private Button send_button;
+
     private EditText content_editText;
     private EditText receiver_editText;
 
@@ -70,7 +73,17 @@ public class SmsDetailActivity extends AppCompatActivity {
         mListView = findViewById(R.id.listView);
         content_editText = findViewById(R.id.content_editText);
         receiver_editText = findViewById(R.id.receiver_editText);
+        send_button = findViewById(R.id.send_button);
 
+        receiver_editText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean b) {
+                if (!b) {
+                    userAddress = receiver_editText.getText().toString();
+                    toGetSmsDetail();
+                }
+            }
+        });
         receiver_editText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -84,8 +97,7 @@ public class SmsDetailActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable editable) {
-                userAddress = receiver_editText.getText().toString();
-                toGetSmsDetail();
+
             }
         });
 
@@ -217,9 +229,11 @@ public class SmsDetailActivity extends AppCompatActivity {
         }
     }
 
+    private Message newMessage;
+
 
     private void initSendButton() {
-        findViewById(R.id.send_button).setOnClickListener(new View.OnClickListener() {
+        send_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
@@ -234,8 +248,7 @@ public class SmsDetailActivity extends AppCompatActivity {
 
                 }
 
-                Message newMessage = new Message().init(PreferencesUtils.getString(SmsDetailActivity.this, "myAddress"), userAddress, new Date(), content, true, false, false);
-                EventBus.getDefault().post(new NewMessageEvent(newMessage));
+                newMessage = new Message().init(PreferencesUtils.getString(SmsDetailActivity.this, "myAddress"), userAddress, new Date(), content, true, false, false);
 
                 JSONObject sendJson = new JSONObject();
                 try {
@@ -248,13 +261,27 @@ public class SmsDetailActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
 
-                dataList.add(newMessage);
-                smsAdapter.notifyDataSetChanged();
-                mListView.smoothScrollToPosition(dataList.size() - 1);
 
-                content_editText.clearFocus();//取消焦点
-                content_editText.setText("");
-                ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(view.getWindowToken(), 0);
+//                EventBus.getDefault().post(new NewMessageEvent(newMessage));
+//
+//                JSONObject sendJson = new JSONObject();
+//                try {
+//                    sendJson.put("apiType", "sms_send");
+//                    sendJson.put("userName", PreferencesUtils.getString(SmsDetailActivity.this, "username"));
+//                    sendJson.put("password", PreferencesUtils.getString(SmsDetailActivity.this, "password"));
+//                    sendJson.put("data", newMessage.toJson());
+//                    MyApplication.send(sendJson);
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
+//
+//                dataList.add(newMessage);
+//                smsAdapter.notifyDataSetChanged();
+//                mListView.smoothScrollToPosition(dataList.size() - 1);
+//
+//                content_editText.clearFocus();//取消焦点
+//                content_editText.setText("");
+//                ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(view.getWindowToken(), 0);
             }
         });
     }
@@ -262,7 +289,6 @@ public class SmsDetailActivity extends AppCompatActivity {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void Event(SmsEvent smsEvent) {
         JSONObject receiveJson = smsEvent.getReceiveJson();
-        System.out.println("=========sms_detail");
         try {
             String apiType = receiveJson.getString("apiType");
             switch (apiType) {
@@ -282,6 +308,34 @@ public class SmsDetailActivity extends AppCompatActivity {
                         dataList.add(message);
                     }
                     smsAdapter.notifyDataSetChanged();
+                    qhTitleView.setTitle(userAddress);
+                    receiver_layout.setVisibility(View.GONE);
+                    break;
+                case "sms_send":
+
+                    int code = receiveJson.getInt("code");
+                    if (code == 0) {
+                        EventBus.getDefault().post(new NewMessageEvent(newMessage));
+                        dataList.add(newMessage);
+                        smsAdapter.notifyDataSetChanged();
+                        mListView.smoothScrollToPosition(dataList.size() - 1);
+
+                        content_editText.clearFocus();//取消焦点
+                        content_editText.setText("");
+                        ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(send_button.getWindowToken(), 0);
+                    }
+                    Toast.makeText(this, receiveJson.get("msg").toString(), Toast.LENGTH_SHORT).show();
+
+                    break;
+                case "sms_push":
+                    Message message = new Message();
+                    message.fromJson(receiveJson.getJSONObject("data"));
+                    dataList.add(message);
+                    smsAdapter.notifyDataSetChanged();
+                    break;
+                case "socketDisconnect":
+                    Toast.makeText(getApplication(), "服务器断开连接，请重新登录", Toast.LENGTH_SHORT).show();
+                    finish();
                     break;
             }
         } catch (JSONException e) {
