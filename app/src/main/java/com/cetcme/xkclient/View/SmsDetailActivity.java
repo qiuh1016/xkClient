@@ -161,7 +161,7 @@ public class SmsDetailActivity extends AppCompatActivity {
                         mListView.setTranscriptMode(TRANSCRIPT_MODE_NORMAL);
 
                         // TODO: 获取上一页短信
-//                        dataList.add(0, new Message().init("123456", "123456", new Date(), "刷新后加的短信刷新后加的短信刷新后加的短信刷新后加的短信刷新后加的短信刷新后加的短信刷新后加的短信刷新后加的短信刷新后加的短信刷新后加的短信", false, true, false));
+//                        dataList.add(0, dataList.get(0));
 
                         mPullRefreshLayout.finishRefresh();
                         smsAdapter.notifyDataSetChanged();
@@ -294,6 +294,7 @@ public class SmsDetailActivity extends AppCompatActivity {
                         dataList.add(message);
                     }
                     smsAdapter.notifyDataSetChanged();
+                    mListView.setSelection(mListView.getBottom());
                     qhTitleView.setTitle(userAddress);
                     receiver_layout.setVisibility(View.GONE);
                     break;
