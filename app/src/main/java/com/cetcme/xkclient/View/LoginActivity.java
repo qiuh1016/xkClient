@@ -1,11 +1,15 @@
 package com.cetcme.xkclient.View;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.cetcme.xkclient.Event.SmsEvent;
 import com.cetcme.xkclient.MyApplication;
@@ -54,6 +58,17 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         myApplication.loginActivity = this;
+
+
+        //Display the current version number
+        PackageManager pm = getPackageManager();
+        try {
+            PackageInfo pi = pm.getPackageInfo(getApplicationContext().getPackageName(), 0);
+            TextView versionNumber = findViewById(R.id.version_tv);
+            versionNumber.setText("©2018 CETCME V" + pi.versionName);
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     private void initView() {

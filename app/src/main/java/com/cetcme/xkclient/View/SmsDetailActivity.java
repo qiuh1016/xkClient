@@ -86,7 +86,6 @@ public class SmsDetailActivity extends AppCompatActivity {
         receiver_tv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                System.out.println("1111111111");
                 receiver_editText.setFocusable(true);
                 receiver_editText.setFocusableInTouchMode(true);
                 receiver_editText.requestFocus();
