@@ -27,13 +27,20 @@ import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Date;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 public class LoginActivity extends AppCompatActivity {
 
     private QMUITipDialog tipDialog;
 
-    private EditText username_et;
-    private EditText password_et;
-    private QMUIRoundButton login_btn;
+    @BindView(R.id.qhTitleView) QHTitleView qhTitleView;
+    @BindView(R.id.username_et) EditText username_et;
+    @BindView(R.id.password_et) EditText password_et;
+    @BindView(R.id.login_btn)   QMUIRoundButton login_btn;
+    @BindView(R.id.version_tv)  TextView version_tv;
 
     private MyApplication myApplication;
 
@@ -43,6 +50,7 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
         getSupportActionBar().hide();
 
+        ButterKnife.bind(this);
         EventBus.getDefault().register(this);
 
         myApplication = (MyApplication) getApplication();
@@ -72,9 +80,6 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void initView() {
-        username_et = findViewById(R.id.username_et);
-        password_et = findViewById(R.id.password_et);
-        login_btn = findViewById(R.id.login_btn);
 
         login_btn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -111,7 +116,6 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void initTitleView() {
-        QHTitleView qhTitleView = findViewById(R.id.qhTitleView);
         qhTitleView.setTitle("用户登录");
         qhTitleView.setBackView(0);
         qhTitleView.setRightView(0);

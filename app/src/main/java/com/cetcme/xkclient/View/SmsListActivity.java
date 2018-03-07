@@ -36,11 +36,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 
 public class SmsListActivity extends AppCompatActivity {
 
-    private ListView listView;
-    private QMUIPullRefreshLayout mPullRefreshLayout;
+    @BindView(R.id.qhTitleView)     QHTitleView qhTitleView;
+    @BindView(R.id.sms_list)        ListView listView;
+    @BindView(R.id.pull_to_refresh) QMUIPullRefreshLayout mPullRefreshLayout;
+
     private SimpleAdapter simpleAdapter;
     private List<Map<String, Object>> dataList = new ArrayList<>();
 
@@ -50,14 +55,15 @@ public class SmsListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_sms_list);
         getSupportActionBar().hide();
 
+        ButterKnife.bind(this);
+        EventBus.getDefault().register(this);
+
         initTitleView();
         initListView();
 
-        EventBus.getDefault().register(this);
     }
 
     private void initTitleView() {
-        QHTitleView qhTitleView = findViewById(R.id.qhTitleView);
         qhTitleView.setTitle("短信列表");
         qhTitleView.setBackView(R.mipmap.icon_back_button);
         qhTitleView.setRightView(R.drawable.sms_add);
@@ -78,7 +84,6 @@ public class SmsListActivity extends AppCompatActivity {
 
     private void initListView() {
         //设置listView
-        listView = findViewById(R.id.sms_list);
         simpleAdapter = new SimpleAdapter(this, getMessageData(), R.layout.cell_sms_list,
                 new String[]{"userAddress", "lastSmsTime", "lastSmsContent", "hasUnread"},
                 new int[]{R.id.number_textView, R.id.time_textView, R.id.content_textView, R.id.unread_tv});
@@ -146,7 +151,6 @@ public class SmsListActivity extends AppCompatActivity {
             }
         });
 
-        mPullRefreshLayout = findViewById(R.id.pull_to_refresh);
         mPullRefreshLayout.setOnPullListener(new QMUIPullRefreshLayout.OnPullListener() {
             @Override
             public void onMoveTarget(int offset) {

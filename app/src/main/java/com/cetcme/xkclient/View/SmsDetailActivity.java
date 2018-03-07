@@ -28,6 +28,7 @@ import com.google.gson.Gson;
 import com.qiuhong.qhlibrary.QHTitleView.QHTitleView;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
 import com.qmuiteam.qmui.widget.pullRefreshLayout.QMUIPullRefreshLayout;
+import com.qmuiteam.qmui.widget.roundwidget.QMUIRoundButton;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -40,25 +41,24 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 import static android.widget.AbsListView.TRANSCRIPT_MODE_NORMAL;
 
 public class SmsDetailActivity extends AppCompatActivity {
 
-    QMUIPullRefreshLayout mPullRefreshLayout;
-    ListView mListView;
+    @BindView(R.id.qhTitleView)         QHTitleView qhTitleView;
+    @BindView(R.id.listView)            ListView mListView;
+    @BindView(R.id.pull_to_refresh)     QMUIPullRefreshLayout mPullRefreshLayout;
+    @BindView(R.id.send_button)         Button send_button;
+    @BindView(R.id.receiver_tv)         TextView receiver_tv;
+    @BindView(R.id.content_editText)    EditText content_editText;
+    @BindView(R.id.receiver_editText)   EditText receiver_editText;
+    @BindView(R.id.receiver_layout)     LinearLayout receiver_layout;
+
     private SmsAdapter smsAdapter;
     private List<Message> dataList = new ArrayList<>();
-    private QHTitleView qhTitleView;
-
-    private Button send_button;
-
-    private TextView receiver_tv;
-
-    private EditText content_editText;
-    private EditText receiver_editText;
-
-    private LinearLayout receiver_layout;
-
     private String userAddress;
 
 
@@ -68,17 +68,10 @@ public class SmsDetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_sms_detail);
         getSupportActionBar().hide();
 
+        ButterKnife.bind(this);
         EventBus.getDefault().register(this);
 
         userAddress = getIntent().getStringExtra("userAddress");
-
-        receiver_layout = findViewById(R.id.receiver_layout);
-        mPullRefreshLayout = findViewById(R.id.pull_to_refresh);
-        mListView = findViewById(R.id.listView);
-        content_editText = findViewById(R.id.content_editText);
-        receiver_editText = findViewById(R.id.receiver_editText);
-        send_button = findViewById(R.id.send_button);
-        receiver_tv = findViewById(R.id.receiver_tv);
 
         receiver_tv.setVisibility(View.GONE);
         receiver_editText.setHint("收件人");
@@ -130,7 +123,6 @@ public class SmsDetailActivity extends AppCompatActivity {
     }
 
     private void initTitleView() {
-        qhTitleView = findViewById(R.id.qhTitleView);
         qhTitleView.setTitle(userAddress);
         qhTitleView.setBackView(R.mipmap.icon_back_button);
         qhTitleView.setRightView(0);
