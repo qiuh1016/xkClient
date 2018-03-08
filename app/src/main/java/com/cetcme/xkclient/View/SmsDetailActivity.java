@@ -18,6 +18,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cetcme.xkclient.MyApplication;
+import com.cetcme.xkclient.MyClass.Constant;
 import com.cetcme.xkclient.MyClass.SmsAdapter;
 import com.cetcme.xkclient.R;
 import com.cetcme.xkclient.RealmModels.Message;
@@ -44,6 +45,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+import static android.widget.AbsListView.TRANSCRIPT_MODE_DISABLED;
 import static android.widget.AbsListView.TRANSCRIPT_MODE_NORMAL;
 
 public class SmsDetailActivity extends AppCompatActivity {
@@ -98,7 +100,11 @@ public class SmsDetailActivity extends AppCompatActivity {
             }
         });
 
-        if (!userAddress.equals(getString(R.string.new_sms))) receiver_layout.setVisibility(View.GONE);
+        if (!userAddress.equals(getString(R.string.new_sms))) {
+            receiver_layout.setVisibility(View.GONE);
+        } else {
+            mPullRefreshLayout.setEnabled(false);
+        }
 
         initTitleView();
         initList();
@@ -138,18 +144,31 @@ public class SmsDetailActivity extends AppCompatActivity {
 
             @Override
             public void onRefresh() {
-                mPullRefreshLayout.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        mListView.setTranscriptMode(TRANSCRIPT_MODE_NORMAL);
+//                mPullRefreshLayout.postDelayed(new Runnable() {
+//                    @Override
+//                    public void run() {
+//
+//
+//                    }
+//                }, 200);
 
-                        // TODO: 获取上一页短信
-//                        dataList.add(0, dataList.get(0));
-
-                        mPullRefreshLayout.finishRefresh();
-                        smsAdapter.notifyDataSetChanged();
-                    }
-                }, 200);
+                if (dataList.size() == 0) {
+                    mPullRefreshLayout.finishRefresh();
+                    return;
+                }
+                // TODO: 获取上一页短信
+                JSONObject sendJson = new JSONObject();
+                try {
+                    sendJson.put("apiType", "sms_detail");
+                    sendJson.put("userAddress", userAddress);
+                    sendJson.put("userName", PreferencesUtils.getString(SmsDetailActivity.this, "username"));
+                    sendJson.put("password", PreferencesUtils.getString(SmsDetailActivity.this, "password"));
+                    sendJson.put("countPerPage", Constant.MESSAGE_COUNT_PER_PAGE);
+                    sendJson.put("timeBefore", dataList.get(0).getSend_time());
+                    MyApplication.send(sendJson);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
         });
 
@@ -206,6 +225,8 @@ public class SmsDetailActivity extends AppCompatActivity {
             sendJson.put("userAddress", userAddress);
             sendJson.put("userName", PreferencesUtils.getString(SmsDetailActivity.this, "username"));
             sendJson.put("password", PreferencesUtils.getString(SmsDetailActivity.this, "password"));
+            sendJson.put("countPerPage", Constant.MESSAGE_COUNT_PER_PAGE);
+            sendJson.put("timeBefore", new Date());
             MyApplication.send(sendJson);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -269,8 +290,20 @@ public class SmsDetailActivity extends AppCompatActivity {
             String apiType = receiveJson.getString("apiType");
             switch (apiType) {
                 case "sms_detail":
-                    dataList.clear();
+
+                    // 刚打开页面的时候 到listView底部
+                    if (dataList.size() == 0) {
+                        mListView.setSelection(mListView.getBottom());
+                        mListView.setTranscriptMode(TRANSCRIPT_MODE_DISABLED);
+                    }
+
+                    ArrayList<Message> list = new ArrayList<>();
                     JSONArray smsList = receiveJson.getJSONArray("data");
+                    if (smsList.length() == 0 && dataList.size() != 0) {
+                        Toast.makeText(this, "没有更多数据了", Toast.LENGTH_SHORT).show();
+                        mPullRefreshLayout.finishRefresh();
+                        return;
+                    }
                     for(int i = 0; i < smsList.length(); i++) {
                         JSONObject jsonObject = smsList.getJSONObject(i);
                         Message message = new Message();
@@ -281,12 +314,15 @@ public class SmsDetailActivity extends AppCompatActivity {
                         message.setRead(jsonObject.getBoolean("read"));
                         message.setDeleted(jsonObject.getBoolean("deleted"));
                         message.setSend(jsonObject.getBoolean("isSend"));
-                        dataList.add(message);
+                        list.add(message);
                     }
+                    dataList.addAll(0, list);
                     smsAdapter.notifyDataSetChanged();
-                    mListView.setSelection(mListView.getBottom());
                     qhTitleView.setTitle(userAddress);
+                    mPullRefreshLayout.setEnabled(true);
+                    mPullRefreshLayout.finishRefresh();
                     receiver_layout.setVisibility(View.GONE);
+
                     break;
                 case "sms_send":
                     int code = receiveJson.getInt("code");
