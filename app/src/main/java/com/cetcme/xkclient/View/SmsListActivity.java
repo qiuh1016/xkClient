@@ -7,6 +7,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.media.RingtoneManager;
 import android.os.Handler;
 import android.os.Vibrator;
 import android.support.v7.app.AppCompatActivity;
@@ -261,6 +262,7 @@ public class SmsListActivity extends AppCompatActivity {
                     String myAddress = receiveJson.getString("userAddress");
                     PreferencesUtils.putString(getApplication(), "myAddress", myAddress);
 
+                    boolean hasUnreadMessage = false;
                     for (int i = 0; i < smsList.length(); i++) {
                         JSONObject smsCellJson = smsList.getJSONObject(i);
                         Map<String, Object> map = new HashMap<>();
@@ -269,8 +271,10 @@ public class SmsListActivity extends AppCompatActivity {
                         map.put("lastSmsTimeOriginal", smsCellJson.get("lastSmsTime").toString());
                         map.put("lastSmsContent", smsCellJson.get("lastSmsContent"));
                         map.put("hasUnread", smsCellJson.getBoolean("hasUnread") ? "●" : "");
+                        if (smsCellJson.getBoolean("hasUnread")) hasUnreadMessage = true;
                         dataList.add(map);
                     }
+                    if (hasUnreadMessage) veberate();
                     simpleAdapter.notifyDataSetChanged();
                     break;
                 case "sms_push":
@@ -279,16 +283,9 @@ public class SmsListActivity extends AppCompatActivity {
                     getNewSms(message);
 
                     if (!isAppOnForeground()) {
-                        createInform();
+                        createInform(message);
                     } else {
-                        final Vibrator vibrator = (Vibrator)this.getSystemService(this.VIBRATOR_SERVICE);
-                        vibrator.vibrate(200);
-                        new Handler().postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                vibrator.vibrate(500);
-                            }
-                        }, 400);
+                        veberate();
                     }
 
                     break;
@@ -301,7 +298,7 @@ public class SmsListActivity extends AppCompatActivity {
         }
     }
 
-    public void createInform() {
+    public void createInform(Message message) {
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN) {
             //定义一个PendingIntent，当用户点击通知时，跳转到某个Activity(也可以发送广播等)
@@ -309,12 +306,12 @@ public class SmsListActivity extends AppCompatActivity {
             PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, 0);
 
             //创建一个通知
-            Notification notification = null;
-            notification = new Notification.Builder(getApplicationContext())
-                    .setContentTitle(getString(R.string.app_name))
-                    .setContentText("您有新的短消息")
+            Notification notification = new Notification.Builder(getApplicationContext())
+                    .setContentTitle("来自" + message.getSender() + "的短消息")
+                    .setContentText(message.getContent())
                     .setDefaults(Notification.DEFAULT_VIBRATE)
                     .setDefaults(Notification.DEFAULT_SOUND)
+                    .setSound(RingtoneManager.getActualDefaultRingtoneUri(getBaseContext(), RingtoneManager.TYPE_NOTIFICATION))
                     .setAutoCancel(true)
                     .setSmallIcon(R.mipmap.ic_launcher)
                     .setContentIntent(pendingIntent)
@@ -374,6 +371,17 @@ public class SmsListActivity extends AppCompatActivity {
                     }
                 })
                 .show();
+    }
+
+    private void veberate() {
+        final Vibrator vibrator = (Vibrator) this.getSystemService(this.VIBRATOR_SERVICE);
+        vibrator.vibrate(200);
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                vibrator.vibrate(500);
+            }
+        }, 400);
     }
 
 }

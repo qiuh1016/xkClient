@@ -98,23 +98,6 @@ public class SmsDetailActivity extends AppCompatActivity {
             }
         });
 
-        receiver_editText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-
-            }
-        });
-
         if (!userAddress.equals(getString(R.string.new_sms))) receiver_layout.setVisibility(View.GONE);
 
         initTitleView();
@@ -240,8 +223,15 @@ public class SmsDetailActivity extends AppCompatActivity {
                 String content = content_editText.getText().toString();
                 if (content.isEmpty()) return;
 
-                if (dataList.size() == 0 || userAddress.equals(getString(R.string.new_sms))) {
+                if (userAddress.equals(getString(R.string.new_sms))) {
+                    if (receiver_editText.getText().toString().isEmpty()) {
+                        return;
+                    } else {
+                        userAddress = receiver_editText.getText().toString();
+                    }
+                }
 
+                if (dataList.size() == 0) {
                     userAddress = receiver_editText.getText().toString();
                     qhTitleView.setTitle(userAddress);
                     receiver_layout.setVisibility(View.GONE);
