@@ -1,7 +1,14 @@
 package com.cetcme.xkclient.View;
 
+import android.app.ActivityManager;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Handler;
+import android.os.Vibrator;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -270,6 +277,20 @@ public class SmsListActivity extends AppCompatActivity {
                     Message message = new Message();
                     message.fromJson(receiveJson.getJSONObject("data"));
                     getNewSms(message);
+
+                    if (!isAppOnForeground()) {
+                        createInform();
+                    } else {
+                        final Vibrator vibrator = (Vibrator)this.getSystemService(this.VIBRATOR_SERVICE);
+                        vibrator.vibrate(200);
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                vibrator.vibrate(500);
+                            }
+                        }, 400);
+                    }
+
                     break;
                 case "socketDisconnect":
                     finish();
@@ -278,6 +299,48 @@ public class SmsListActivity extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    public void createInform() {
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN) {
+            //定义一个PendingIntent，当用户点击通知时，跳转到某个Activity(也可以发送广播等)
+            Intent intent = new Intent(getApplicationContext(), SmsListActivity.class);
+            PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, 0);
+
+            //创建一个通知
+            Notification notification = null;
+            notification = new Notification.Builder(getApplicationContext())
+                    .setContentTitle(getString(R.string.app_name))
+                    .setContentText("您有新的短消息")
+                    .setDefaults(Notification.DEFAULT_VIBRATE)
+                    .setDefaults(Notification.DEFAULT_SOUND)
+                    .setAutoCancel(true)
+                    .setSmallIcon(R.mipmap.ic_launcher)
+                    .setContentIntent(pendingIntent)
+                    .build();
+            //用NotificationManager的notify方法通知用户生成标题栏消息通知
+            NotificationManager nManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            nManager.notify(100, notification);//id是应用中通知的唯一标识
+            //如果拥有相同id的通知已经被提交而且没有被移除，该方法会用更新的信息来替换之前的通知。
+        }
+
+    }
+
+    private Boolean isAppOnForeground() {
+        ActivityManager activityManager =(ActivityManager) getApplicationContext().getSystemService(
+                Context.ACTIVITY_SERVICE);
+        String packageName =getApplicationContext().getPackageName();
+        List<ActivityManager.RunningAppProcessInfo> appProcesses = activityManager.getRunningAppProcesses();
+        if (appProcesses == null)
+            return false;
+        for (ActivityManager.RunningAppProcessInfo appProcess : appProcesses) {
+            if (appProcess.processName.equals(packageName)
+                    && appProcess.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
