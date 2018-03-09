@@ -27,7 +27,7 @@
         android:textStyle="bold"
         android:textColor="#fd9f3b"
         android:layout_marginTop="30dp"
-        android:text="舰载北斗显控终端" />
+        android:text="船载北斗显控终端" />
 
     <TextView
         android:layout_width="match_parent"
