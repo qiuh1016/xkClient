@@ -40,7 +40,8 @@
         <activity
             android:name=".View.SmsDetailActivity"
             android:windowSoftInputMode="adjustPan|stateAlwaysHidden" />
-        <activity android:name=".View.SmsListActivity"/>
+        <activity android:name=".View.SmsListActivity"
+            android:launchMode="singleTask"/>
     </application>
 
 </manifest>
