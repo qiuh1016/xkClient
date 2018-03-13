@@ -9,7 +9,9 @@ import android.util.Log;
 
 import com.cetcme.xkclient.Event.SmsEvent;
 import com.cetcme.xkclient.MyClass.Constant;
+import com.cetcme.xkclient.Utils.PreferencesUtils;
 import com.cetcme.xkclient.View.LoginActivity;
+import com.cetcme.xkclient.View.SmsDetailActivity;
 
 import org.greenrobot.eventbus.EventBus;
 import org.json.JSONException;
@@ -23,6 +25,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.Date;
 
 /**
  * Created by qiuhong on 01/03/2018.
@@ -81,6 +84,19 @@ public class MyApplication extends Application {
                     mHandler.sendMessage(msg);
                     startReader();
                     checkConnect();
+
+                    // 发送时间
+                    JSONObject sendJson = new JSONObject();
+                    try {
+                        sendJson.put("apiType", "set_time");
+                        sendJson.put("userName", PreferencesUtils.getString(getApplicationContext(), "username"));
+                        sendJson.put("password", PreferencesUtils.getString(getApplicationContext(), "password"));
+                        sendJson.put("time", new Date());
+                        MyApplication.send(sendJson);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
                 } catch (UnknownHostException e) {
                     android.os.Message msg = new Message();
                     msg.what = MESSAGE_LOGIN_FAIL;

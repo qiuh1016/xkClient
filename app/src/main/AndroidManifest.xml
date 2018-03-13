@@ -20,6 +20,8 @@
     <!--震动-->
     <uses-permission android:name="android.permission.VIBRATE"/>
 
+    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+
     <application
         android:name=".MyApplication"
         android:allowBackup="true"
