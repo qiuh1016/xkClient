@@ -30,7 +30,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".View.LoginActivity">
+        <activity android:name=".View.LoginActivity"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -39,9 +40,11 @@
         </activity>
         <activity
             android:name=".View.SmsDetailActivity"
-            android:windowSoftInputMode="adjustPan|stateAlwaysHidden" />
+            android:windowSoftInputMode="adjustPan|stateAlwaysHidden"
+            android:screenOrientation="portrait"/>
         <activity android:name=".View.SmsListActivity"
-            android:launchMode="singleTask"/>
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait"/>
     </application>
 
 </manifest>

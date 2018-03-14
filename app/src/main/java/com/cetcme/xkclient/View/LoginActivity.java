@@ -1,20 +1,35 @@
 package com.cetcme.xkclient.View;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.net.NetworkInfo;
+import android.net.wifi.ScanResult;
+import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.SimpleAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.cetcme.xkclient.Event.SmsEvent;
 import com.cetcme.xkclient.MyApplication;
+import com.cetcme.xkclient.MyClass.Constant;
 import com.cetcme.xkclient.R;
 import com.cetcme.xkclient.Utils.PreferencesUtils;
+import com.cetcme.xkclient.Utils.WifiUtil;
 import com.qiuhong.qhlibrary.QHTitleView.QHTitleView;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialogAction;
@@ -27,7 +42,11 @@ import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -41,8 +60,15 @@ public class LoginActivity extends AppCompatActivity {
     @BindView(R.id.password_et) EditText password_et;
     @BindView(R.id.login_btn)   QMUIRoundButton login_btn;
     @BindView(R.id.version_tv)  TextView version_tv;
+    @BindView(R.id.wifi_lv)     ListView wifi_lv;
 
     private MyApplication myApplication;
+
+    List<ScanResult> scanResults = new ArrayList<>();
+    WifiManager wifiManager;
+
+    private Toast wifiToast;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,7 +103,92 @@ public class LoginActivity extends AppCompatActivity {
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
+
+        if (Constant.SHOW_WIFI_LIST) {
+            wifiToast = Toast.makeText(LoginActivity.this, "", Toast.LENGTH_SHORT);
+
+            //生成广播处理
+            IntentFilter intentFilter = new IntentFilter(WifiManager.NETWORK_STATE_CHANGED_ACTION);
+            //注册广播
+            registerReceiver(receiver, intentFilter);
+
+            // wifi
+            wifiManager = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
+            if (wifiManager != null) {
+                scanResults = wifiManager.getScanResults();
+                List<Map<String, Object>> dataList = new ArrayList<>();
+                for (ScanResult scanResult : scanResults) {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("ssid", scanResult.SSID);
+                    map.put("level", WifiUtil.getStringLevel(scanResult));
+                    if (WifiUtil.getType(scanResult) == WifiUtil.WIFI_CIPHER_NONE) {
+                        dataList.add(map);
+                    }
+                }
+                SimpleAdapter simpleAdapter = new SimpleAdapter(LoginActivity.this, dataList, R.layout.cell_wifi, new String[]{"ssid", "level"}, new int[]{R.id.wifi_ssid_tv, R.id.level_tv});
+                wifi_lv.setAdapter(simpleAdapter);
+            }
+
+            wifi_lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                    if (scanResults != null) {
+                        showWifiTip = true;
+                        wifiManager.disconnect();
+                        ScanResult scanResult = scanResults.get(i);
+                        WifiConfiguration config = new WifiConfiguration();
+                        config.SSID = scanResult.SSID;
+                        connect(config);
+                    }
+
+                }
+            });
+        }
+
+
     }
+
+    boolean showWifiTip = false;
+
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+//            if (action.equals(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)) {
+//                // wifi已成功扫描到可用wifi。
+//                List<ScanResult> scanResults = wifiManager.getScanResults();
+//                wifiListAdapter.clear();
+//                wifiListAdapter.addAll(scanResults);
+//            }
+
+            if (action.equals(WifiManager.NETWORK_STATE_CHANGED_ACTION)) {
+                NetworkInfo info = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
+                if (info.getState().equals(NetworkInfo.State.DISCONNECTED)) {
+                    wifiToast.setText("连接已断开");
+                } else if (info.getState().equals(NetworkInfo.State.CONNECTED)) {
+                    WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+                    final WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+                    wifiToast.setText("已连接到网络:" + wifiInfo.getSSID());
+                } else {
+                    NetworkInfo.DetailedState state = info.getDetailedState();
+                    if (state == state.CONNECTING) {
+                        wifiToast.setText("连接中...");
+                    } else if (state == state.AUTHENTICATING) {
+                        wifiToast.setText("正在验证身份信息...");
+                    } else if (state == state.OBTAINING_IPADDR) {
+                        wifiToast.setText("正在获取IP地址...");
+                    } else if (state == state.FAILED) {
+                        wifiToast.setText("连接失败");
+                    }
+                }
+                wifiToast.show();
+            }
+
+        }
+
+
+
+    };
 
     private void initView() {
 
@@ -190,9 +301,18 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if(EventBus.getDefault().isRegistered(this)) {
+        if (EventBus.getDefault().isRegistered(this)) {
             EventBus.getDefault().unregister(this);
         }
+        if (Constant.SHOW_WIFI_LIST) {
+            //解除广播
+            unregisterReceiver(receiver);
+        }
+    }
+
+    private void connect(WifiConfiguration config) {
+        int wcgID = wifiManager.addNetwork(config);
+        wifiManager.enableNetwork(wcgID, true);
     }
 
 

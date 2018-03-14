@@ -21,5 +21,8 @@ public class Constant {
     // 短信分页条数
     public static int MESSAGE_COUNT_PER_PAGE = 20;
 
+    // 登录界面wifi
+    public static final boolean SHOW_WIFI_LIST = true;
+
 
 }
