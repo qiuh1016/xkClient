@@ -156,7 +156,7 @@ public class SmsDetailActivity extends AppCompatActivity {
                     mPullRefreshLayout.finishRefresh();
                     return;
                 }
-                // TODO: 获取上一页短信
+                // 获取上一页短信
                 JSONObject sendJson = new JSONObject();
                 try {
                     sendJson.put("apiType", "sms_detail");
@@ -279,6 +279,15 @@ public class SmsDetailActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
 
+                EventBus.getDefault().post(new NewMessageEvent(newMessage));
+                dataList.add(newMessage);
+                smsAdapter.notifyDataSetChanged();
+                mListView.smoothScrollToPosition(dataList.size() - 1);
+
+                content_editText.clearFocus();//取消焦点
+                content_editText.setText("");
+                ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(send_button.getWindowToken(), 0);
+
             }
         });
     }
@@ -326,16 +335,16 @@ public class SmsDetailActivity extends AppCompatActivity {
                     break;
                 case "sms_send":
                     int code = receiveJson.getInt("code");
-                    if (code == 0) {
-                        EventBus.getDefault().post(new NewMessageEvent(newMessage));
-                        dataList.add(newMessage);
-                        smsAdapter.notifyDataSetChanged();
-                        mListView.smoothScrollToPosition(dataList.size() - 1);
-
-                        content_editText.clearFocus();//取消焦点
-                        content_editText.setText("");
-                        ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(send_button.getWindowToken(), 0);
-                    }
+//                    if (code == 0) {
+//                        EventBus.getDefault().post(new NewMessageEvent(newMessage));
+//                        dataList.add(newMessage);
+//                        smsAdapter.notifyDataSetChanged();
+//                        mListView.smoothScrollToPosition(dataList.size() - 1);
+//
+//                        content_editText.clearFocus();//取消焦点
+//                        content_editText.setText("");
+//                        ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(send_button.getWindowToken(), 0);
+//                    }
                     Toast.makeText(this, receiveJson.get("msg").toString(), Toast.LENGTH_SHORT).show();
                     break;
                 case "sms_push":
