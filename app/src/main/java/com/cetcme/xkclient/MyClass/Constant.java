@@ -15,14 +15,15 @@ public class Constant {
     // socket 服务器端口
     public static int SOCKET_SERVER_PORT = 9999;
 
+    // socket 文件服务器端口
+    public static int FILE_SOCKET_SERVER_PORT = 9998;
+
     // socket 连接超时时间 单位 毫秒
     public static int SOCKET_CONNECT_TIME_OUT_TIME = 5000;
 
     // 短信分页条数
     public static int MESSAGE_COUNT_PER_PAGE = 20;
 
-    // 登录界面wifi
-    public static final boolean SHOW_WIFI_LIST = true;
 
 
 }

@@ -1,6 +1,9 @@
 package com.cetcme.xkclient.View;
 
+import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.BroadcastReceiver;
+import android.content.ClipData;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -8,11 +11,15 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.Build;
+import android.os.Environment;
 import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -27,9 +34,13 @@ import android.widget.Toast;
 import com.cetcme.xkclient.Event.SmsEvent;
 import com.cetcme.xkclient.MyApplication;
 import com.cetcme.xkclient.MyClass.Constant;
+import com.cetcme.xkclient.MyClass.ModeConstant;
 import com.cetcme.xkclient.R;
+import com.cetcme.xkclient.Socket.SocketManager;
 import com.cetcme.xkclient.Utils.PreferencesUtils;
 import com.cetcme.xkclient.Utils.WifiUtil;
+import com.nononsenseapps.filepicker.FilePickerActivity;
+import com.nononsenseapps.filepicker.Utils;
 import com.qiuhong.qhlibrary.QHTitleView.QHTitleView;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialogAction;
@@ -42,6 +53,8 @@ import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -64,12 +77,18 @@ public class LoginActivity extends AppCompatActivity {
 
     private MyApplication myApplication;
 
+    // for wifi list view
     List<ScanResult> scanResults = new ArrayList<>();
     WifiManager wifiManager;
-
+    boolean showWifiTip = false;
     private Toast wifiToast;
 
+    // for file pick
+    int FILE_CODE = 0x99;
+    private Handler handler;
+    private SocketManager socketManager;
 
+    @SuppressLint("HandlerLeak")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -94,17 +113,104 @@ public class LoginActivity extends AppCompatActivity {
         myApplication.loginActivity = this;
 
 
-        //Display the current version number
-        PackageManager pm = getPackageManager();
-        try {
-            PackageInfo pi = pm.getPackageInfo(getApplicationContext().getPackageName(), 0);
-            TextView versionNumber = findViewById(R.id.version_tv);
-            versionNumber.setText("©2018 CETCME V" + pi.versionName);
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
+        displayCurrentVersionNumber();
+        initWifiListView();
+
+        if (ModeConstant.DEBUG_MODE) {
+
+            handler = new Handler(){
+                @Override
+                public void handleMessage(Message msg) {
+                    switch(msg.what){
+                        case 0:
+                            SimpleDateFormat format = new SimpleDateFormat("hh:mm:ss");
+                            String str = "[" + format.format(new Date()) + "]" + msg.obj.toString();
+                            wifiToast.setText(str);
+                            wifiToast.show();
+                            System.out.println(str);
+                            break;
+                        case 1:
+                            System.out.println("本机IP：" + GetIpAddress() + " 监听端口:" + msg.obj.toString());
+                            break;
+                        case 2:
+                            Toast.makeText(getApplicationContext(), msg.obj.toString(), Toast.LENGTH_SHORT).show();
+                            break;
+                    }
+                }
+            };
+            socketManager = new SocketManager(handler);
+
+            findViewById(R.id.version_tv).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    // This always works
+                    Intent i = new Intent(LoginActivity.this, FilePickerActivity.class);
+                    // This works if you defined the intent filter
+                    // Intent i = new Intent(Intent.ACTION_GET_CONTENT);
+
+                    // Set these depending on your use case. These are the defaults.
+                    i.putExtra(FilePickerActivity.EXTRA_ALLOW_MULTIPLE, false);
+                    i.putExtra(FilePickerActivity.EXTRA_ALLOW_CREATE_DIR, false);
+                    i.putExtra(FilePickerActivity.EXTRA_MODE, FilePickerActivity.MODE_FILE);
+
+                    // Configure initial directory by specifying a String.
+                    // You could specify a String like "/storage/emulated/0/", but that can
+                    // dangerous. Always use Android's API calls to get paths to the SD-card or
+                    // internal memory.
+                    i.putExtra(FilePickerActivity.EXTRA_START_PATH, Environment.getExternalStorageDirectory().getPath());
+
+                    startActivityForResult(i, FILE_CODE);
+                }
+            });
         }
 
-        if (Constant.SHOW_WIFI_LIST) {
+    }
+
+    /**
+     * 文件选择器返回
+     */
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        if (requestCode == FILE_CODE && resultCode == Activity.RESULT_OK) {
+            // Use the provided utility method to parse the result
+            List<Uri> files = Utils.getSelectedFilesFromResult(intent);
+            final String ipAddress = Constant.SOCKET_SERVER_IP;
+            final int port = Constant.FILE_SOCKET_SERVER_PORT;
+
+            final ArrayList<String> fileNames = new ArrayList<>();
+            final ArrayList<String> paths = new ArrayList<>();
+
+            for (Uri uri: files) {
+                final File file = Utils.getFileForUri(uri);
+                // Do something with the result...
+
+                fileNames.add(file.getName());
+                paths.add(file.getPath());
+            }
+
+            Message.obtain(handler, 0, "正在发送至" + ipAddress + ":" +  port).sendToTarget();
+            Thread sendThread = new Thread(new Runnable(){
+                @Override
+                public void run() {
+                    socketManager.SendFile(fileNames, paths, ipAddress, port);
+                }
+            });
+            sendThread.start();
+
+        }
+    }
+
+    public String GetIpAddress() {
+        WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
+        WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+        int i = wifiInfo.getIpAddress();
+        return (i & 0xFF) + "." +
+                ((i >> 8 ) & 0xFF) + "." +
+                ((i >> 16 ) & 0xFF)+ "." +
+                ((i >> 24 ) & 0xFF );
+    }
+
+    private void initWifiListView() {
+        if (ModeConstant.SHOW_WIFI_LIST) {
             wifiToast = Toast.makeText(LoginActivity.this, "", Toast.LENGTH_SHORT);
 
             //生成广播处理
@@ -144,11 +250,22 @@ public class LoginActivity extends AppCompatActivity {
                 }
             });
         }
-
-
     }
 
-    boolean showWifiTip = false;
+    /**
+     * Display the current version number
+     */
+    private void displayCurrentVersionNumber() {
+        PackageManager pm = getPackageManager();
+        try {
+            PackageInfo pi = pm.getPackageInfo(getApplicationContext().getPackageName(), 0);
+            TextView versionNumber = findViewById(R.id.version_tv);
+            versionNumber.setText("©2018 CETCME V" + pi.versionName);
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
@@ -304,7 +421,7 @@ public class LoginActivity extends AppCompatActivity {
         if (EventBus.getDefault().isRegistered(this)) {
             EventBus.getDefault().unregister(this);
         }
-        if (Constant.SHOW_WIFI_LIST) {
+        if (ModeConstant.SHOW_WIFI_LIST) {
             //解除广播
             unregisterReceiver(receiver);
         }
