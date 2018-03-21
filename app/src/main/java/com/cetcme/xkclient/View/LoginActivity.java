@@ -224,11 +224,13 @@ public class LoginActivity extends AppCompatActivity {
                 scanResults = wifiManager.getScanResults();
                 List<Map<String, Object>> dataList = new ArrayList<>();
                 for (ScanResult scanResult : scanResults) {
-                    Map<String, Object> map = new HashMap<>();
-                    map.put("ssid", scanResult.SSID);
-                    map.put("level", WifiUtil.getStringLevel(scanResult));
-                    if (WifiUtil.getType(scanResult) == WifiUtil.WIFI_CIPHER_NONE) {
-                        dataList.add(map);
+                    if (!scanResult.SSID.isEmpty()) {
+                        Map<String, Object> map = new HashMap<>();
+                        map.put("ssid", scanResult.SSID);
+                        map.put("level", WifiUtil.getStringLevel(scanResult));
+                        if (WifiUtil.getType(scanResult) == WifiUtil.WIFI_CIPHER_NONE) {
+                            dataList.add(map);
+                        }
                     }
                 }
                 SimpleAdapter simpleAdapter = new SimpleAdapter(LoginActivity.this, dataList, R.layout.cell_wifi, new String[]{"ssid", "level"}, new int[]{R.id.wifi_ssid_tv, R.id.level_tv});

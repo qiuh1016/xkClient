@@ -26,6 +26,19 @@ public class Message {
     private boolean read;
     private boolean deleted;
     private boolean isSend;
+    private boolean sendOK;
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public boolean isSendOK() {
+        return sendOK;
+    }
+
+    public void setSendOK(boolean sendOK) {
+        this.sendOK = sendOK;
+    }
 
     public String getSender() {
         return sender;
@@ -94,6 +107,7 @@ public class Message {
             jsonObject.put("read", this.read);
             jsonObject.put("deleted", this.deleted);
             jsonObject.put("isSend", this.isSend);
+            jsonObject.put("sendOK", this.sendOK);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -103,6 +117,7 @@ public class Message {
 
     public void fromJson(JSONObject jsonObject) {
         try {
+            this.id = jsonObject.getString("id");
             this.sender = jsonObject.getString("sender");
             this.receiver = jsonObject.getString("receiver");
             this.send_time = new Date(jsonObject.getString("send_time"));
@@ -110,6 +125,7 @@ public class Message {
             this.read = jsonObject.getBoolean("read");
             this.deleted = jsonObject.getBoolean("deleted");
             this.isSend = jsonObject.getBoolean("isSend");
+            this.sendOK = jsonObject.getBoolean("sendOK");
         } catch (JSONException e) {
             e.printStackTrace();
         }

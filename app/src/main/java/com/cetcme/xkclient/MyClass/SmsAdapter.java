@@ -51,6 +51,8 @@ public class SmsAdapter extends BaseAdapter {
             //根据返回类型加载不同的布局文件和创建不同的缓存类ViewHolder
             if (message.isSend()) {
                 view = mInflater.inflate(R.layout.cell_sms_send,null);
+                TextView failed_tv = view.findViewById(R.id.failed_tv);
+                if (!message.isSendOK()) failed_tv.setVisibility(View.VISIBLE);
             } else {
                 view = mInflater.inflate(R.layout.cell_sms_receive,null);
             }
@@ -58,7 +60,9 @@ public class SmsAdapter extends BaseAdapter {
             TextView time_textView = view.findViewById(R.id.time_textView);
             content_textView.setText(message.getContent());
             time_textView.setText(DateUtil.modifyDate(message.getSend_time().toString()));
+
 //        }
         return view;
     }
+
 }

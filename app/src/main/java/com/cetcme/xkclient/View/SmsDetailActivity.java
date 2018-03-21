@@ -267,6 +267,7 @@ public class SmsDetailActivity extends AppCompatActivity {
                 newMessage.setDeleted(false);
                 newMessage.setRead(true);
                 newMessage.setSend(true);
+                newMessage.setSendOK(true);
 
                 JSONObject sendJson = new JSONObject();
                 try {
@@ -316,13 +317,7 @@ public class SmsDetailActivity extends AppCompatActivity {
                     for(int i = 0; i < smsList.length(); i++) {
                         JSONObject jsonObject = smsList.getJSONObject(i);
                         Message message = new Message();
-                        message.setSender(jsonObject.getString("sender"));
-                        message.setReceiver(jsonObject.getString("receiver"));
-                        message.setSend_time(new Date(jsonObject.getString("send_time")));
-                        message.setContent(jsonObject.getString("content"));
-                        message.setRead(jsonObject.getBoolean("read"));
-                        message.setDeleted(jsonObject.getBoolean("deleted"));
-                        message.setSend(jsonObject.getBoolean("isSend"));
+                        message.fromJson(jsonObject);
                         list.add(message);
                     }
                     dataList.addAll(0, list);
@@ -335,16 +330,18 @@ public class SmsDetailActivity extends AppCompatActivity {
                     break;
                 case "sms_send":
                     int code = receiveJson.getInt("code");
-//                    if (code == 0) {
-//                        EventBus.getDefault().post(new NewMessageEvent(newMessage));
-//                        dataList.add(newMessage);
-//                        smsAdapter.notifyDataSetChanged();
-//                        mListView.smoothScrollToPosition(dataList.size() - 1);
-//
-//                        content_editText.clearFocus();//取消焦点
-//                        content_editText.setText("");
-//                        ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(send_button.getWindowToken(), 0);
-//                    }
+                    if (code == 1) {
+                       String id = receiveJson.getString("id");
+                        for (int i = dataList.size() - 1; i >= 0; i--) {
+                           System.out.println(i);
+                           if (dataList.get(i).getId().equals(id)) {
+                               System.out.println("ok" + i);
+                               dataList.get(i).setSendOK(false);
+                               smsAdapter.notifyDataSetChanged();
+                               break;
+                           }
+                        }
+                    }
                     Toast.makeText(this, receiveJson.get("msg").toString(), Toast.LENGTH_SHORT).show();
                     break;
                 case "sms_push":
