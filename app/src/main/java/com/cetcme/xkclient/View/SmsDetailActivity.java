@@ -129,7 +129,7 @@ public class SmsDetailActivity extends AppCompatActivity {
     }
 
     private void initList() {
-        smsAdapter = new SmsAdapter(getApplicationContext(), getMessageData());
+        smsAdapter = new SmsAdapter(getApplicationContext(), getMessageData(), content_editText);
         mListView.setAdapter(smsAdapter);
         mPullRefreshLayout.setOnPullListener(new QMUIPullRefreshLayout.OnPullListener() {
             @Override

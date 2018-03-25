@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import com.cetcme.xkclient.R;
@@ -21,9 +22,11 @@ public class SmsAdapter extends BaseAdapter {
 
     private LayoutInflater mInflater;
     private List<Message> dataList;
+    private EditText editText;
 
-    public SmsAdapter(Context context, List<Message> dataList) {
+    public SmsAdapter(Context context, List<Message> dataList, EditText editText) {
         this.dataList = dataList;
+        this.editText = editText;
         mInflater = LayoutInflater.from(context);
     }
 
@@ -46,13 +49,21 @@ public class SmsAdapter extends BaseAdapter {
     @Override
     public View getView(int i, View view, ViewGroup viewGroup) {
         //得到加载布局的类型
-        Message message = dataList.get(i);
+        final Message message = dataList.get(i);
 //        if (view == null){
             //根据返回类型加载不同的布局文件和创建不同的缓存类ViewHolder
             if (message.isSend()) {
                 view = mInflater.inflate(R.layout.cell_sms_send,null);
                 TextView failed_tv = view.findViewById(R.id.failed_tv);
                 if (!message.isSendOK()) failed_tv.setVisibility(View.VISIBLE);
+                failed_tv.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        String content = message.getContent();
+                        editText.setText(content);
+                        editText.setSelection(content.length());
+                    }
+                });
             } else {
                 view = mInflater.inflate(R.layout.cell_sms_receive,null);
             }
