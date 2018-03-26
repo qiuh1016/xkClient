@@ -10,6 +10,8 @@ import android.content.Intent;
 import android.media.RingtoneManager;
 import android.os.Handler;
 import android.os.Vibrator;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -53,6 +55,7 @@ public class SmsListActivity extends AppCompatActivity {
     @BindView(R.id.qhTitleView)     QHTitleView qhTitleView;
     @BindView(R.id.sms_list)        ListView listView;
     @BindView(R.id.pull_to_refresh) QMUIPullRefreshLayout mPullRefreshLayout;
+    @BindView(R.id.fab)             FloatingActionButton floatingActionButton;
 
     private SimpleAdapter simpleAdapter;
     private List<Map<String, Object>> dataList = new ArrayList<>();
@@ -69,12 +72,21 @@ public class SmsListActivity extends AppCompatActivity {
         initTitleView();
         initListView();
 
+        floatingActionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getApplication(), SmsDetailActivity.class);
+                intent.putExtra("userAddress", getString(R.string.new_sms));
+                startActivity(intent);
+            }
+        });
+
     }
 
     private void initTitleView() {
         qhTitleView.setTitle("短信列表");
         qhTitleView.setBackView(R.mipmap.icon_back_button);
-        qhTitleView.setRightView(R.drawable.sms_add);
+        qhTitleView.setRightView(R.mipmap.icon_topbar_about);
         qhTitleView.setClickCallback(new QHTitleView.ClickCallback() {
             @Override
             public void onBackClick() {
@@ -83,8 +95,7 @@ public class SmsListActivity extends AppCompatActivity {
 
             @Override
             public void onRightClick() {
-                Intent intent = new Intent(getApplication(), SmsDetailActivity.class);
-                intent.putExtra("userAddress", getString(R.string.new_sms));
+                Intent intent = new Intent(getApplication(), SettingActivity.class);
                 startActivity(intent);
             }
         });

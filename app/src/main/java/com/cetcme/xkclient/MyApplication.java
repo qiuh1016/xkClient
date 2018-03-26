@@ -85,18 +85,6 @@ public class MyApplication extends Application {
                     startReader();
                     checkConnect();
 
-                    // 发送时间
-                    JSONObject sendJson = new JSONObject();
-                    try {
-                        sendJson.put("apiType", "set_time");
-                        sendJson.put("userName", PreferencesUtils.getString(getApplicationContext(), "username"));
-                        sendJson.put("password", PreferencesUtils.getString(getApplicationContext(), "password"));
-                        sendJson.put("time", new Date());
-                        MyApplication.send(sendJson);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-
                 } catch (UnknownHostException e) {
                     android.os.Message msg = new Message();
                     msg.what = MESSAGE_LOGIN_FAIL;

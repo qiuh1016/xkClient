@@ -83,11 +83,6 @@ public class LoginActivity extends AppCompatActivity {
     boolean showWifiTip = false;
     private Toast wifiToast;
 
-    // for file pick
-    int FILE_CODE = 0x99;
-    private Handler handler;
-    private SocketManager socketManager;
-
     @SuppressLint("HandlerLeak")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,98 +111,8 @@ public class LoginActivity extends AppCompatActivity {
         displayCurrentVersionNumber();
         initWifiListView();
 
-        if (ModeConstant.DEBUG_MODE) {
-
-            handler = new Handler(){
-                @Override
-                public void handleMessage(Message msg) {
-                    switch(msg.what){
-                        case 0:
-                            SimpleDateFormat format = new SimpleDateFormat("hh:mm:ss");
-                            String str = "[" + format.format(new Date()) + "]" + msg.obj.toString();
-                            wifiToast.setText(str);
-                            wifiToast.show();
-                            System.out.println(str);
-                            break;
-                        case 1:
-                            System.out.println("本机IP：" + GetIpAddress() + " 监听端口:" + msg.obj.toString());
-                            break;
-                        case 2:
-                            Toast.makeText(getApplicationContext(), msg.obj.toString(), Toast.LENGTH_SHORT).show();
-                            break;
-                    }
-                }
-            };
-            socketManager = new SocketManager(handler);
-
-            findViewById(R.id.version_tv).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    // This always works
-                    Intent i = new Intent(LoginActivity.this, FilePickerActivity.class);
-                    // This works if you defined the intent filter
-                    // Intent i = new Intent(Intent.ACTION_GET_CONTENT);
-
-                    // Set these depending on your use case. These are the defaults.
-                    i.putExtra(FilePickerActivity.EXTRA_ALLOW_MULTIPLE, false);
-                    i.putExtra(FilePickerActivity.EXTRA_ALLOW_CREATE_DIR, false);
-                    i.putExtra(FilePickerActivity.EXTRA_MODE, FilePickerActivity.MODE_FILE);
-
-                    // Configure initial directory by specifying a String.
-                    // You could specify a String like "/storage/emulated/0/", but that can
-                    // dangerous. Always use Android's API calls to get paths to the SD-card or
-                    // internal memory.
-                    i.putExtra(FilePickerActivity.EXTRA_START_PATH, Environment.getExternalStorageDirectory().getPath());
-
-                    startActivityForResult(i, FILE_CODE);
-                }
-            });
-        }
-
     }
 
-    /**
-     * 文件选择器返回
-     */
-    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
-        if (requestCode == FILE_CODE && resultCode == Activity.RESULT_OK) {
-            // Use the provided utility method to parse the result
-            List<Uri> files = Utils.getSelectedFilesFromResult(intent);
-            final String ipAddress = Constant.SOCKET_SERVER_IP;
-            final int port = Constant.FILE_SOCKET_SERVER_PORT;
-
-            final ArrayList<String> fileNames = new ArrayList<>();
-            final ArrayList<String> paths = new ArrayList<>();
-
-            for (Uri uri: files) {
-                final File file = Utils.getFileForUri(uri);
-                // Do something with the result...
-
-                fileNames.add(file.getName());
-                paths.add(file.getPath());
-            }
-
-            Message.obtain(handler, 0, "正在发送至" + ipAddress + ":" +  port).sendToTarget();
-            Thread sendThread = new Thread(new Runnable(){
-                @Override
-                public void run() {
-                    socketManager.SendFile(fileNames, paths, ipAddress, port);
-                }
-            });
-            sendThread.start();
-
-        }
-    }
-
-    public String GetIpAddress() {
-        WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
-        WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-        int i = wifiInfo.getIpAddress();
-        return (i & 0xFF) + "." +
-                ((i >> 8 ) & 0xFF) + "." +
-                ((i >> 16 ) & 0xFF)+ "." +
-                ((i >> 24 ) & 0xFF );
-    }
 
     private void initWifiListView() {
         if (ModeConstant.SHOW_WIFI_LIST) {

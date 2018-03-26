@@ -1,6 +1,11 @@
 package com.cetcme.xkclient.Utils;
 
+import android.content.Context;
 import android.net.wifi.ScanResult;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
+
+import static android.content.Context.WIFI_SERVICE;
 
 /**
  * Created by qiuhong on 14/03/2018.
@@ -66,5 +71,14 @@ public class WifiUtil {
         return type;
     }
 
+    public static String GetIpAddress(Context context) {
+        WifiManager wifiManager = (WifiManager) context.getSystemService(WIFI_SERVICE);
+        WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+        int i = wifiInfo.getIpAddress();
+        return (i & 0xFF) + "." +
+                ((i >> 8 ) & 0xFF) + "." +
+                ((i >> 16 ) & 0xFF)+ "." +
+                ((i >> 24 ) & 0xFF );
+    }
 
 }
