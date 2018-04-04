@@ -24,6 +24,7 @@ import com.cetcme.xkclient.R;
 import com.cetcme.xkclient.RealmModels.Message;
 import com.cetcme.xkclient.Event.NewMessageEvent;
 import com.cetcme.xkclient.Event.SmsEvent;
+import com.cetcme.xkclient.Utils.DateUtil;
 import com.cetcme.xkclient.Utils.PreferencesUtils;
 import com.google.gson.Gson;
 import com.qiuhong.qhlibrary.QHTitleView.QHTitleView;
@@ -164,7 +165,7 @@ public class SmsDetailActivity extends AppCompatActivity {
                     sendJson.put("userName", PreferencesUtils.getString(SmsDetailActivity.this, "username"));
                     sendJson.put("password", PreferencesUtils.getString(SmsDetailActivity.this, "password"));
                     sendJson.put("countPerPage", Constant.MESSAGE_COUNT_PER_PAGE);
-                    sendJson.put("timeBefore", dataList.get(0).getSend_time());
+                    sendJson.put("timeBefore", DateUtil.Date2String(dataList.get(0).getSend_time()));
                     MyApplication.send(sendJson);
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -226,7 +227,7 @@ public class SmsDetailActivity extends AppCompatActivity {
             sendJson.put("userName", PreferencesUtils.getString(SmsDetailActivity.this, "username"));
             sendJson.put("password", PreferencesUtils.getString(SmsDetailActivity.this, "password"));
             sendJson.put("countPerPage", Constant.MESSAGE_COUNT_PER_PAGE);
-            sendJson.put("timeBefore", new Date());
+            sendJson.put("timeBefore", DateUtil.Date2String(new Date()));
             MyApplication.send(sendJson);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -347,7 +348,7 @@ public class SmsDetailActivity extends AppCompatActivity {
                 case "sms_push":
                     Message message = new Message();
                     message.fromJson(receiveJson.getJSONObject("data"));
-                    if (message.getReceiver().equals(userAddress)) {
+                    if ((message.isSend() && message.getReceiver().equals(userAddress)) || (!message.isSend() && message.getSender().equals(userAddress))) {
                         message.setRead(true);
                         dataList.add(message);
                         smsAdapter.notifyDataSetChanged();
