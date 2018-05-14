@@ -51,4 +51,31 @@ public class SocketOrder {
             e.printStackTrace();
         }
     }
+
+    public static void setID(Context context, String id) {
+        JSONObject sendJson = new JSONObject();
+        try {
+            sendJson.put("apiType", "device_info_set");
+            sendJson.put("userName", PreferencesUtils.getString(context, "username"));
+            sendJson.put("password", PreferencesUtils.getString(context, "password"));
+            JSONObject data = new JSONObject();
+            data.put("deviceID", id);
+            sendJson.put("data", data);
+            MyApplication.send(sendJson);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void getDeviceID(Context context) {
+        JSONObject sendJson = new JSONObject();
+        try {
+            sendJson.put("apiType", "device_id");
+            sendJson.put("userName", PreferencesUtils.getString(context, "username"));
+            sendJson.put("password", PreferencesUtils.getString(context, "password"));
+            MyApplication.send(sendJson);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
 }

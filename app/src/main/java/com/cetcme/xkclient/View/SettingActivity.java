@@ -4,36 +4,33 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.InputType;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.Toast;
 
 import com.cetcme.xkclient.Event.SmsEvent;
-import com.cetcme.xkclient.MyApplication;
 import com.cetcme.xkclient.MyClass.Constant;
 import com.cetcme.xkclient.R;
 import com.cetcme.xkclient.Socket.SocketManager;
 import com.cetcme.xkclient.Socket.SocketOrder;
-import com.cetcme.xkclient.Utils.PreferencesUtils;
 import com.cetcme.xkclient.Utils.WifiUtil;
 import com.nononsenseapps.filepicker.FilePickerActivity;
 import com.nononsenseapps.filepicker.Utils;
 import com.qiuhong.qhlibrary.QHTitleView.QHTitleView;
-import com.qmuiteam.qmui.widget.QMUILoadingView;
+import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
+import com.qmuiteam.qmui.widget.dialog.QMUIDialogAction;
 import com.qmuiteam.qmui.widget.grouplist.QMUICommonListItemView;
 import com.qmuiteam.qmui.widget.grouplist.QMUIGroupListView;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -45,8 +42,6 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-
-import static android.widget.AbsListView.TRANSCRIPT_MODE_DISABLED;
 
 
 public class SettingActivity extends AppCompatActivity {
@@ -76,6 +71,7 @@ public class SettingActivity extends AppCompatActivity {
         initTitleView();
         initGroupListView();
 
+        SocketOrder.getDeviceID(this);
     }
 
     private void initTitleView() {
@@ -95,6 +91,8 @@ public class SettingActivity extends AppCompatActivity {
         });
     }
 
+    QMUICommonListItemView setNumberCell;
+
     private void initGroupListView() {
 
         QMUICommonListItemView debugBtnSwitchCell = groupListView.createItemView("DEBUG按钮组");
@@ -109,6 +107,11 @@ public class SettingActivity extends AppCompatActivity {
                 tipToast.show();
             }
         });
+
+        setNumberCell = groupListView.createItemView("设置ID");
+        setNumberCell.setOrientation(QMUICommonListItemView.VERTICAL);
+        setNumberCell.setDetailText("");
+        setNumberCell.setAccessoryType(QMUICommonListItemView.ACCESSORY_TYPE_CHEVRON);
 
         QMUICommonListItemView setTimeCell = groupListView.createItemView("设置时间");
         setTimeCell.setOrientation(QMUICommonListItemView.VERTICAL);
@@ -128,6 +131,9 @@ public class SettingActivity extends AppCompatActivity {
                         case "发送文件":
                             openSendFileActivity();
                             break;
+                        case "设置ID":
+                            showEditIDDialog();
+                            break;
                         case "设置时间":
                             SocketOrder.setTime(SettingActivity.this);
                             break;
@@ -138,71 +144,9 @@ public class SettingActivity extends AppCompatActivity {
 
         QMUIGroupListView.newSection(SettingActivity.this)
                 .addItemView(debugBtnSwitchCell, onClickListener)
+                .addItemView(setNumberCell, onClickListener)
                 .addItemView(setTimeCell, onClickListener)
                 .addItemView(sendFileCell, onClickListener)
-                .addTo(groupListView);
-    }
-
-    /**
-     * demo
-     */
-    private void initGroupListViewDemo() {
-        QMUICommonListItemView normalItem = groupListView.createItemView("Item 1");
-        normalItem.setOrientation(QMUICommonListItemView.VERTICAL);
-
-        QMUICommonListItemView itemWithDetail = groupListView.createItemView("Item 2");
-        itemWithDetail.setDetailText("在右方的详细信息");
-
-        QMUICommonListItemView itemWithDetailBelow = groupListView.createItemView("Item 3");
-        itemWithDetailBelow.setOrientation(QMUICommonListItemView.VERTICAL);
-        itemWithDetailBelow.setDetailText("在标题下方的详细信息");
-
-        QMUICommonListItemView itemWithChevron = groupListView.createItemView("Item 4");
-        itemWithChevron.setAccessoryType(QMUICommonListItemView.ACCESSORY_TYPE_CHEVRON);
-
-        QMUICommonListItemView itemWithSwitch = groupListView.createItemView("Item 5");
-        itemWithSwitch.setAccessoryType(QMUICommonListItemView.ACCESSORY_TYPE_SWITCH);
-        itemWithSwitch.getSwitch().setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                Toast.makeText(SettingActivity.this, "checked = " + isChecked, Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        QMUICommonListItemView itemWithCustom = groupListView.createItemView("Item 6");
-        itemWithCustom.setAccessoryType(QMUICommonListItemView.ACCESSORY_TYPE_CUSTOM);
-        QMUILoadingView loadingView = new QMUILoadingView(SettingActivity.this);
-        itemWithCustom.addAccessoryCustomView(loadingView);
-
-        QMUICommonListItemView qmuiCommonListItemView = groupListView.createItemView("Item 7");
-        qmuiCommonListItemView.setOrientation(QMUICommonListItemView.VERTICAL);
-        qmuiCommonListItemView.setAccessoryType(QMUICommonListItemView.ACCESSORY_TYPE_CHEVRON);
-        qmuiCommonListItemView.setDetailText("123123");
-
-        View.OnClickListener onClickListener = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (v instanceof QMUICommonListItemView) {
-                    CharSequence text = ((QMUICommonListItemView) v).getText();
-                    Toast.makeText(SettingActivity.this, text + " is Clicked", Toast.LENGTH_SHORT).show();
-                }
-            }
-        };
-
-        QMUIGroupListView.newSection(SettingActivity.this)
-                .setTitle("Section 1: 默认提供的样式")
-                .setDescription("Section 1 的描述")
-                .addItemView(normalItem, onClickListener)
-                .addItemView(itemWithDetail, onClickListener)
-                .addItemView(itemWithDetailBelow, onClickListener)
-                .addItemView(itemWithChevron, onClickListener)
-                .addItemView(itemWithSwitch, onClickListener)
-                .addTo(groupListView);
-
-        QMUIGroupListView.newSection(SettingActivity.this)
-                .setTitle("Section 2: 自定义右侧 View")
-                .addItemView(itemWithCustom, onClickListener)
-                .addItemView(qmuiCommonListItemView, onClickListener)
                 .addTo(groupListView);
     }
 
@@ -285,6 +229,33 @@ public class SettingActivity extends AppCompatActivity {
         }
     }
 
+    private void showEditIDDialog() {
+        final QMUIDialog.EditTextDialogBuilder builder = new QMUIDialog.EditTextDialogBuilder(this);
+        builder.setTitle("设置ID")
+                .setPlaceholder("在此输入终端ID")
+                .setInputType(InputType.TYPE_CLASS_NUMBER)
+                .addAction("取消", new QMUIDialogAction.ActionListener() {
+                    @Override
+                    public void onClick(QMUIDialog dialog, int index) {
+                        dialog.dismiss();
+                    }
+                })
+                .addAction("确定", new QMUIDialogAction.ActionListener() {
+                    @Override
+                    public void onClick(QMUIDialog dialog, int index) {
+                        CharSequence text = builder.getEditText().getText();
+                        if (text != null && text.length() == 8) {
+                            SocketOrder.setID(SettingActivity.this, text.toString());
+                            dialog.dismiss();
+                        } else {
+                            Toast.makeText(getApplicationContext(), "请填入正确ID", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                })
+                .show();
+    }
+
+
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void Event(SmsEvent smsEvent) {
@@ -294,6 +265,10 @@ public class SettingActivity extends AppCompatActivity {
             switch (apiType) {
                 case "socketDisconnect":
                     finish();
+                    break;
+                case "device_id":
+                    String deviceID = receiveJson.getString("deviceID");
+                    setNumberCell.setDetailText(deviceID);
                     break;
             }
         } catch (JSONException e) {
