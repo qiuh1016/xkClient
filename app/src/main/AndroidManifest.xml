@@ -69,6 +69,8 @@
             android:screenOrientation="portrait"/>
         <activity android:name=".View.SettingActivity">
         </activity>
+        <activity android:name=".View.RouteListActivity">
+        </activity>
     </application>
 
 </manifest>
