@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">xkClient</string>
+    <string name="app_name">船载北斗手机端</string>
     <string name="new_sms">新信息</string>
     <string name="title_activity_main2">Main2Activity</string>
 </resources>
