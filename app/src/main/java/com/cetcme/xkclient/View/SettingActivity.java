@@ -42,9 +42,10 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import me.imid.swipebacklayout.lib.app.SwipeBackActivity;
 
 
-public class SettingActivity extends AppCompatActivity {
+public class SettingActivity extends SwipeBackActivity {
 
     @BindView(R.id.qhTitleView)     QHTitleView qhTitleView;
     @BindView(R.id.groupListView)   QMUIGroupListView groupListView;
@@ -122,6 +123,11 @@ public class SettingActivity extends AppCompatActivity {
         sendFileCell.setDetailText("发送文件给终端");
         sendFileCell.setAccessoryType(QMUICommonListItemView.ACCESSORY_TYPE_CHEVRON);
 
+        QMUICommonListItemView RouteCell = groupListView.createItemView("航迹");
+        RouteCell.setOrientation(QMUICommonListItemView.VERTICAL);
+        RouteCell.setDetailText("查看航迹列表");
+        RouteCell.setAccessoryType(QMUICommonListItemView.ACCESSORY_TYPE_CHEVRON);
+
         View.OnClickListener onClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -137,6 +143,9 @@ public class SettingActivity extends AppCompatActivity {
                         case "设置时间":
                             SocketOrder.setTime(SettingActivity.this);
                             break;
+                        case "航迹":
+                            startActivity(new Intent(SettingActivity.this, RouteListActivity.class));
+                            break;
                     }
                 }
             }
@@ -147,6 +156,7 @@ public class SettingActivity extends AppCompatActivity {
                 .addItemView(setNumberCell, onClickListener)
                 .addItemView(setTimeCell, onClickListener)
                 .addItemView(sendFileCell, onClickListener)
+                .addItemView(RouteCell, onClickListener)
                 .addTo(groupListView);
     }
 

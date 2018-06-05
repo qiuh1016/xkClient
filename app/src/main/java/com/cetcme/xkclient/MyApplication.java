@@ -131,7 +131,6 @@ public class MyApplication extends Application {
                                 } else {
                                     receiveJson = new JSONObject(lastReceive + rexml);
                                 }
-
                                 EventBus.getDefault().post(new SmsEvent(receiveJson));
                                 lastReceive = "";
                             } catch (JSONException e) {

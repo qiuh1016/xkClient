@@ -78,4 +78,29 @@ public class SocketOrder {
             e.printStackTrace();
         }
     }
+
+    public static void getRouteList(Context context) {
+        JSONObject sendJson = new JSONObject();
+        try {
+            sendJson.put("apiType", "route_list");
+            sendJson.put("userName", PreferencesUtils.getString(context, "username"));
+            sendJson.put("password", PreferencesUtils.getString(context, "password"));
+            MyApplication.send(sendJson);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void getRouteDetail(Context context, String navtime) {
+        JSONObject sendJson = new JSONObject();
+        try {
+            sendJson.put("apiType", "route_detail");
+            sendJson.put("userName", PreferencesUtils.getString(context, "username"));
+            sendJson.put("password", PreferencesUtils.getString(context, "password"));
+            sendJson.put("navtime", navtime);
+            MyApplication.send(sendJson);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
 }
