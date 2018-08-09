@@ -33,11 +33,15 @@ import java.util.Date;
 
 public class MyApplication extends Application {
 
-    static Context context;
+    static MyApplication context;
     @Override
     public void onCreate() {
         super.onCreate();
         context = this;
+    }
+
+    public static MyApplication getInstance() {
+        return context;
     }
 
     private static int MESSAGE_LOGIN_OK = 0x01;

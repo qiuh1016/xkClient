@@ -1,5 +1,6 @@
 package com.cetcme.xkclient.View;
 
+import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -8,24 +9,32 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Vibrator;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.widget.Toast;
 
 import com.cetcme.xkclient.MyApplication;
+import com.cetcme.xkclient.MyClass.Constant;
 import com.cetcme.xkclient.R;
 import com.cetcme.xkclient.RealmModels.Message;
 import com.cetcme.xkclient.Event.NewMessageEvent;
 import com.cetcme.xkclient.Event.SmsEvent;
+import com.cetcme.xkclient.Socket.SocketManager;
+import com.cetcme.xkclient.UpdateAppManager;
 import com.cetcme.xkclient.Utils.DateUtil;
 import com.cetcme.xkclient.Utils.PreferencesUtils;
+import com.cetcme.xkclient.Utils.WifiUtil;
+import com.nononsenseapps.filepicker.Utils;
 import com.qiuhong.qhlibrary.QHTitleView.QHTitleView;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialogAction;
@@ -38,6 +47,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -60,6 +72,17 @@ public class SmsListActivity extends AppCompatActivity {
     private SimpleAdapter simpleAdapter;
     private List<Map<String, Object>> dataList = new ArrayList<>();
 
+    UpdateAppManager updateAppManager;
+    SocketManager socketManager;
+
+
+    private static Activity activity;
+
+    public static Activity getInstance() {
+        return activity;
+    }
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -80,6 +103,15 @@ public class SmsListActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+        activity = this;
+
+
+        updateAppManager = new UpdateAppManager(SmsListActivity.this);
+        if (LoginActivity.filePath != null) {
+            // 传送apk
+            sendApk(LoginActivity.filePath);
+        }
 
     }
 
@@ -166,7 +198,7 @@ public class SmsListActivity extends AppCompatActivity {
                             }
                         })
                         .show();
-                return false;
+                return true; // 返回true 不再触发click
             }
         });
 
@@ -264,6 +296,16 @@ public class SmsListActivity extends AppCompatActivity {
         try {
             String apiType = receiveJson.getString("apiType");
             switch (apiType) {
+                case "app_update":
+                    String version = receiveJson.getString("version");
+                    // TODO: 下载更新并安装 提示切换wifi 然后下载，完成后回来
+                    boolean needUpdate = receiveJson.getBoolean("needUpdate");
+                    Log.i("app", "SocketEvent: app_update" + needUpdate);
+                    if (needUpdate) {
+                        updateAppManager.showNoticeDialog(version);
+                        LoginActivity.version = version;
+                    }
+                    break;
                 case "sms_list":
 
                     mPullRefreshLayout.finishRefresh();
@@ -378,7 +420,12 @@ public class SmsListActivity extends AppCompatActivity {
                     public void onClick(QMUIDialog dialog, int index) {
                         dialog.dismiss();
                         finish();
-                        MyApplication.socket = null;
+                        try {
+                            MyApplication.socket.close();
+                            MyApplication.socket = null;
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
                 })
                 .show();
@@ -393,6 +440,59 @@ public class SmsListActivity extends AppCompatActivity {
                 vibrator.vibrate(500);
             }
         }, 400);
+    }
+
+    private void sendApk(String filePath) {
+        final Toast tipToast = Toast.makeText(SmsListActivity.this, "", Toast.LENGTH_SHORT);
+        Handler handler = new Handler(){
+            @Override
+            public void handleMessage(android.os.Message msg) {
+                switch(msg.what){
+                    case 0:
+                        SimpleDateFormat format = new SimpleDateFormat("hh:mm:ss");
+                        String str = "[" + format.format(new Date()) + "]" + msg.obj.toString();
+                        tipToast.setText(str);
+                        tipToast.show();
+                        System.out.println(str);
+                        break;
+                    case 1:
+                        System.out.println("本机IP：" + WifiUtil.GetIpAddress(SmsListActivity.this) + " 监听端口:" + msg.obj.toString());
+                        break;
+                    case 2:
+                        tipToast.setText(msg.obj.toString());
+                        tipToast.show();
+                        break;
+                }
+            }
+        };
+
+        socketManager = new SocketManager(handler);
+
+        final String ipAddress = Constant.SOCKET_SERVER_IP;
+        final int port = Constant.FILE_SOCKET_SERVER_PORT;
+
+        final ArrayList<String> fileNames = new ArrayList<>();
+        final ArrayList<String> paths = new ArrayList<>();
+
+        try {
+            File file = new File(filePath);
+
+            fileNames.add(file.getName());
+            paths.add(file.getPath());
+
+            android.os.Message.obtain(handler, 0, "正在发送至" + ipAddress + ":" +  port).sendToTarget();
+            Thread sendThread = new Thread(new Runnable(){
+                @Override
+                public void run() {
+                    socketManager.SendFile(fileNames, paths, ipAddress, port);
+                    LoginActivity.filePath = null;
+                }
+            });
+            sendThread.start();
+        } catch (Exception e) {
+            e.getStackTrace();
+        }
+
     }
 
 }
