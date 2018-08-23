@@ -37,6 +37,7 @@ import com.cetcme.xkclient.MyClass.Constant;
 import com.cetcme.xkclient.MyClass.ModeConstant;
 import com.cetcme.xkclient.R;
 import com.cetcme.xkclient.Socket.SocketManager;
+import com.cetcme.xkclient.UpdateAppManager;
 import com.cetcme.xkclient.Utils.PreferencesUtils;
 import com.cetcme.xkclient.Utils.WifiUtil;
 import com.nononsenseapps.filepicker.FilePickerActivity;
@@ -81,6 +82,10 @@ public class LoginActivity extends AppCompatActivity {
     WifiManager wifiManager;
     boolean showWifiTip = false;
     private Toast wifiToast;
+    public static String version;
+    public static String filePath;
+
+    public static boolean downloadDialogShowed = false;
 
     @SuppressLint("HandlerLeak")
     @Override
@@ -108,9 +113,18 @@ public class LoginActivity extends AppCompatActivity {
 
         displayCurrentVersionNumber();
         initWifiListView();
-
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (!downloadDialogShowed) {
+            boolean update = PreferencesUtils.getBoolean(LoginActivity.this, "update", false);
+            if (update && version != null) {
+                new UpdateAppManager(LoginActivity.this).showDownloadDialog(version);
+            }
+        }
+    }
 
     private void initWifiListView() {
         if (ModeConstant.SHOW_WIFI_LIST) {
@@ -286,17 +300,22 @@ public class LoginActivity extends AppCompatActivity {
             String apiType = receiveJson.getString("apiType");
             switch (apiType) {
                 case "socketDisconnect":
-                    new QMUIDialog.MessageDialogBuilder(LoginActivity.this)
-                            .setTitle("提示")
-                            .setMessage("与服务器断开连接")
-                            .addAction("确定", new QMUIDialogAction.ActionListener() {
-                                @Override
-                                public void onClick(QMUIDialog dialog, int index) {
-                                    dialog.dismiss();
-                                }
-                            })
-                            .show();
-                    break;
+                    tipDialog.dismiss();
+                    boolean update = PreferencesUtils.getBoolean(LoginActivity.this, "update", false);
+                    if (!update) {
+                        // 不需要更新 就提示断开
+                        new QMUIDialog.MessageDialogBuilder(LoginActivity.this)
+                                .setTitle("提示")
+                                .setMessage("与服务器断开连接")
+                                .addAction("确定", new QMUIDialogAction.ActionListener() {
+                                    @Override
+                                    public void onClick(QMUIDialog dialog, int index) {
+                                        dialog.dismiss();
+                                    }
+                                })
+                                .show();
+                        break;
+                    }
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -314,6 +333,7 @@ public class LoginActivity extends AppCompatActivity {
             unregisterReceiver(receiver);
         }
     }
+
 
     private void connect(WifiConfiguration config) {
         int wcgID = wifiManager.addNetwork(config);

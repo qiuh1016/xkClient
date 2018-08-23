@@ -33,11 +33,15 @@ import java.util.Date;
 
 public class MyApplication extends Application {
 
-    static Context context;
+    static MyApplication context;
     @Override
     public void onCreate() {
         super.onCreate();
         context = this;
+    }
+
+    public static MyApplication getInstance() {
+        return context;
     }
 
     private static int MESSAGE_LOGIN_OK = 0x01;
@@ -79,9 +83,6 @@ public class MyApplication extends Application {
                     socket.connect(new InetSocketAddress(Constant.SOCKET_SERVER_IP, Constant.SOCKET_SERVER_PORT), Constant.SOCKET_CONNECT_TIME_OUT_TIME);
                     Log.e("JAVA", "建立连接：" + socket);
 
-                    android.os.Message msg = new Message();
-                    msg.what = MESSAGE_LOGIN_OK;
-                    mHandler.sendMessage(msg);
                     startReader();
                     checkConnect();
 
@@ -131,19 +132,22 @@ public class MyApplication extends Application {
                                 } else {
                                     receiveJson = new JSONObject(lastReceive + rexml);
                                 }
-                                EventBus.getDefault().post(new SmsEvent(receiveJson));
                                 lastReceive = "";
+
+                                // 是否为登陆消息
+                                String type = receiveJson.getString("apiType");
+                                if (type.equals("user_login")) {
+                                    int code = receiveJson.getInt("code");
+                                    android.os.Message msg = new Message();
+                                    msg.what = code == 0 ? MESSAGE_LOGIN_OK : MESSAGE_LOGIN_FAIL;
+                                    mHandler.sendMessage(msg);
+                                } else {
+                                    // 不是的话广播
+                                    EventBus.getDefault().post(new SmsEvent(receiveJson));
+                                }
                             } catch (JSONException e) {
                                 e.printStackTrace();
                                 lastReceive = lastReceive + rexml;
-//                                Looper.prepare();
-//                                new Handler().postDelayed(new Runnable() {
-//                                    @Override
-//                                    public void run() {
-//                                        lastReceive = "";
-//                                    }
-//                                }, 1000);
-//                                Looper.loop();
                             }
                         } else {
                             socket.close();
