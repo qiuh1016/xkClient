@@ -68,7 +68,6 @@ public class LoginActivity extends AppCompatActivity {
 
     private QMUITipDialog tipDialog;
 
-    @BindView(R.id.qhTitleView) QHTitleView qhTitleView;
     @BindView(R.id.username_et) EditText username_et;
     @BindView(R.id.password_et) EditText password_et;
     @BindView(R.id.login_btn)   QMUIRoundButton login_btn;
@@ -96,7 +95,6 @@ public class LoginActivity extends AppCompatActivity {
         myApplication = (MyApplication) getApplication();
 
         initView();
-        initTitleView();
 
         String username = PreferencesUtils.getString(LoginActivity.this, "username");
         String password = PreferencesUtils.getString(LoginActivity.this, "password");
@@ -167,7 +165,7 @@ public class LoginActivity extends AppCompatActivity {
         try {
             PackageInfo pi = pm.getPackageInfo(getApplicationContext().getPackageName(), 0);
             TextView versionNumber = findViewById(R.id.version_tv);
-            versionNumber.setText("©2018 CETCME V" + pi.versionName);
+            versionNumber.setText("© 2018 CETCME V" + pi.versionName);
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
@@ -246,23 +244,6 @@ public class LoginActivity extends AppCompatActivity {
                     }, 1000);
                 }
 
-            }
-        });
-    }
-
-    private void initTitleView() {
-        qhTitleView.setTitle("用户登录");
-        qhTitleView.setBackView(0);
-        qhTitleView.setRightView(0);
-        qhTitleView.setClickCallback(new QHTitleView.ClickCallback() {
-            @Override
-            public void onBackClick() {
-                //
-            }
-
-            @Override
-            public void onRightClick() {
-                //
             }
         });
     }

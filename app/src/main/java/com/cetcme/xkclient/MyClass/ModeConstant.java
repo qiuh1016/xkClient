@@ -14,6 +14,6 @@ public class ModeConstant {
     /**
      * 登录界面wifi
      */
-    public static final boolean SHOW_WIFI_LIST = true;
+    public static final boolean SHOW_WIFI_LIST = false;
 
 }
