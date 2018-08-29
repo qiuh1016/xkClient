@@ -31,6 +31,7 @@ import com.cetcme.xkclient.Event.NewMessageEvent;
 import com.cetcme.xkclient.Event.SmsEvent;
 import com.cetcme.xkclient.Socket.SocketManager;
 import com.cetcme.xkclient.UpdateAppManager;
+import com.cetcme.xkclient.Utils.CommonUtil;
 import com.cetcme.xkclient.Utils.DateUtil;
 import com.cetcme.xkclient.Utils.PreferencesUtils;
 import com.cetcme.xkclient.Utils.WifiUtil;
@@ -82,12 +83,12 @@ public class SmsListActivity extends AppCompatActivity {
         return activity;
     }
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sms_list);
         getSupportActionBar().hide();
+        CommonUtil.setTitleViewImmersive(this);
 
         ButterKnife.bind(this);
         EventBus.getDefault().register(this);

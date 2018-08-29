@@ -24,6 +24,7 @@ import com.cetcme.xkclient.R;
 import com.cetcme.xkclient.RealmModels.Message;
 import com.cetcme.xkclient.Event.NewMessageEvent;
 import com.cetcme.xkclient.Event.SmsEvent;
+import com.cetcme.xkclient.Utils.CommonUtil;
 import com.cetcme.xkclient.Utils.DateUtil;
 import com.cetcme.xkclient.Utils.PreferencesUtils;
 import com.google.gson.Gson;
@@ -70,6 +71,7 @@ public class SmsDetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sms_detail);
         getSupportActionBar().hide();
+        CommonUtil.setTitleViewImmersive(this);
 
         ButterKnife.bind(this);
         EventBus.getDefault().register(this);

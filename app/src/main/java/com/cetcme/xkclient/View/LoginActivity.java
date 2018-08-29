@@ -38,6 +38,7 @@ import com.cetcme.xkclient.MyClass.ModeConstant;
 import com.cetcme.xkclient.R;
 import com.cetcme.xkclient.Socket.SocketManager;
 import com.cetcme.xkclient.UpdateAppManager;
+import com.cetcme.xkclient.Utils.CommonUtil;
 import com.cetcme.xkclient.Utils.PreferencesUtils;
 import com.cetcme.xkclient.Utils.WifiUtil;
 import com.nononsenseapps.filepicker.FilePickerActivity;
@@ -93,6 +94,8 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         getSupportActionBar().hide();
+
+        CommonUtil.setTitleViewImmersive(this);
 
         ButterKnife.bind(this);
         EventBus.getDefault().register(this);

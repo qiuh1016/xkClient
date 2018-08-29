@@ -24,7 +24,7 @@
             android:textStyle="bold"
             android:textColor="#FFFFFF"
             android:layout_marginTop="60dp"
-            android:text="船载北斗显控终端" />
+            android:text="VRI3船用北斗显控终端" />
 
         <TextView
             android:layout_width="match_parent"

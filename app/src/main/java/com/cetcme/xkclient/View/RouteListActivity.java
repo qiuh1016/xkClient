@@ -14,6 +14,7 @@ import com.cetcme.xkclient.Event.SmsEvent;
 import com.cetcme.xkclient.R;
 import com.cetcme.xkclient.RealmModels.Message;
 import com.cetcme.xkclient.Socket.SocketOrder;
+import com.cetcme.xkclient.Utils.CommonUtil;
 import com.cetcme.xkclient.Utils.DateUtil;
 import com.cetcme.xkclient.Utils.FileUtil;
 import com.cetcme.xkclient.Utils.PreferencesUtils;
@@ -62,6 +63,7 @@ public class RouteListActivity extends SwipeBackActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_route_list);
         getSupportActionBar().hide();
+        CommonUtil.setTitleViewImmersive(this);
         ButterKnife.bind(this);
         EventBus.getDefault().register(this);
         initTitleView();

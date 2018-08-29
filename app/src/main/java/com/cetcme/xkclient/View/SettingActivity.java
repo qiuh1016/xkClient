@@ -19,6 +19,7 @@ import com.cetcme.xkclient.MyClass.Constant;
 import com.cetcme.xkclient.R;
 import com.cetcme.xkclient.Socket.SocketManager;
 import com.cetcme.xkclient.Socket.SocketOrder;
+import com.cetcme.xkclient.Utils.CommonUtil;
 import com.cetcme.xkclient.Utils.WifiUtil;
 import com.nononsenseapps.filepicker.FilePickerActivity;
 import com.nononsenseapps.filepicker.Utils;
@@ -63,7 +64,7 @@ public class SettingActivity extends SwipeBackActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_setting);
         getSupportActionBar().hide();
-
+        CommonUtil.setTitleViewImmersive(this);
         ButterKnife.bind(this);
         EventBus.getDefault().register(this);
 
@@ -152,9 +153,9 @@ public class SettingActivity extends SwipeBackActivity {
         };
 
         QMUIGroupListView.newSection(SettingActivity.this)
-                .addItemView(debugBtnSwitchCell, onClickListener)
-                .addItemView(setNumberCell, onClickListener)
-                .addItemView(setTimeCell, onClickListener)
+//                .addItemView(debugBtnSwitchCell, onClickListener)
+//                .addItemView(setNumberCell, onClickListener)
+//                .addItemView(setTimeCell, onClickListener)
                 .addItemView(sendFileCell, onClickListener)
                 .addItemView(RouteCell, onClickListener)
                 .addTo(groupListView);
